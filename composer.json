@@ -1,0 +1,28 @@
+{
+    "name": "wyxos/harmonie",
+    "description": "Backend utilities for Laravel and @wyxos/vision",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Wyxos\\Harmonie\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Wyxos",
+            "email": "joey.jaulimsing@live.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Wyxos\\Harmonie\\Harmonie\\Resource\\ResourceServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": ">=8.1",
+        "laravel/framework": "^10.0"
+    }
+}
