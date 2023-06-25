@@ -5,14 +5,22 @@ import simpleGit from 'simple-git';
 
 const git = simpleGit();
 
+function incrementVersion(version) {
+    const versions = version.split('.').map(Number);
+    versions[2] += 1; // Increment PATCH version
+    return versions.join('.');
+}
+
+
 (async function() {
     const currentVersion = JSON.parse(fs.readFileSync('./package.json')).version;
+    const incrementedVersion = incrementVersion(currentVersion);
 
     const response = await prompts({
         type: 'text',
         name: 'version',
         message: 'Enter the version to publish',
-        initial: currentVersion
+        initial: incrementedVersion
     });
 
     const version = response.version;
