@@ -1,0 +1,19 @@
+{
+  "name": "laravel-resources",
+  "version": "1.4.0",
+  "description": "Laravel Resources",
+  "main": "release.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@wyxos.github.com:wyxos/laravel-resources.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "prompt": "^1.2.0"
+  }
+}

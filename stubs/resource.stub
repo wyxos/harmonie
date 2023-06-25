@@ -1,0 +1,11 @@
+<?php
+
+namespace $namespace;
+
+use $use;
+
+class $className extends $extend {
+    public function handle(){
+        /** TODO create handler. */
+    }
+}
