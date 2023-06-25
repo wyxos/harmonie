@@ -44,6 +44,11 @@ function incrementVersion(version) {
         console.log('No previous tags found. New tag created.');
     }
 
-    await git.push('origin', tagVersion);
+    await git.push('origin', 'HEAD'); // Pushes changes to the repository
+    console.log('Repository changes pushed.');
+
+    await git.push('origin', tagVersion); // Pushes the new tag
+    console.log('Tag version pushed.');
+
     console.log('Push complete.');
 })();
