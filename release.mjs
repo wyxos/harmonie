@@ -1,9 +1,9 @@
 // script.mjs
 import fs from 'fs';
 import prompts from 'prompts';
-import gitP from 'simple-git/promise';
+import simpleGit from 'simple-git';
 
-const git = gitP();
+const git = simpleGit();
 
 (async function() {
     const currentVersion = JSON.parse(fs.readFileSync('./package.json')).version;
