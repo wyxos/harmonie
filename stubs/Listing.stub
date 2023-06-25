@@ -1,0 +1,35 @@
+<?php
+
+namespace $namespace;
+
+use Illuminate\Database\Eloquent\Builder;
+use $use;
+
+class $className extends $baseClass
+{
+    public function query(): Builder
+    {
+        // return \App\Models\User::query();
+    }
+
+    public function filters($base)
+    {
+
+    }
+
+//    /**
+//     * Enables formatting each instance returned by the pagination.
+//     */
+//    public function format($item)
+//    {
+//        return $item;
+//    }
+
+//    /**
+//     * Merge data with the final response.
+//     */
+//    public function data(): array
+//    {
+//        return [];
+//    }
+}
