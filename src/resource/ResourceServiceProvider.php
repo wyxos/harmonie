@@ -19,10 +19,10 @@ class ResourceServiceProvider extends ServiceProvider
             ]);
         }
 
-        Route::middleware(config('resources.middleware'))
-            ->any('/resource/{resource}/{handler}', config('resources.handler'))
-            ->name('resource')
-            ->where('handler', '.*');
+//        Route::middleware(config('resources.middleware'))
+//            ->any('/resource/{resource}/{handler}', config('resources.handler'))
+//            ->name('resource')
+//            ->where('handler', '.*');
     }
 
     public function register()
