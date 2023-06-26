@@ -1,6 +1,8 @@
 # Wyxos Harmonie
 
-Wyxos Harmonie is a PHP library designed to streamline backend development for Laravel applications. This library can function alongside the Node.js plugin @wyxos/vision to deliver an enhanced development experience, but it is also fully capable of operating independently.
+Wyxos Harmonie is a PHP library designed to streamline backend development for Laravel applications. This library 
+can function alongside the Node.js plugin [@wyxos/vision](https://github.com/wyxos/vision) to deliver an enhanced development experience, but it is 
+also fully capable of operating independently.
 
 ## Installation
 
