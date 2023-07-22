@@ -2,6 +2,7 @@
 
 namespace Wyxos\Harmonie\Export;
 
+use App\Console\Commands\MakeExportCommand;
 use Illuminate\Support\ServiceProvider;
 use Wyxos\Harmonie\Resource\MakeRouteCommand;
 
@@ -22,14 +23,14 @@ class ExportServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/../../migrations/export');
 
         if ($this->app->runningInConsole()) {
+            $this->commands([
+                MakeExportCommand::class
+            ]);
+
             // Publish migrations
             $this->publishes([
                 __DIR__.'/../../migrations/export' => database_path('migrations')
             ], 'migrations');
-
-            $this->commands([
-                MakeRouteCommand::class
-            ]);
         }
     }
 
