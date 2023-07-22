@@ -3,24 +3,26 @@
 namespace App\Exports;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Query\Builder;
 use {{baseClassFull}};
 
 class {{className}} extends {{baseClass}}
 {
-    public function query()
+    public function query(): \Illuminate\Database\Eloquent\Builder|HasMany|BelongsToMany|Builder
     {
         // return Model::query();
     }
 
-    public function format($row)
+    public function format($row): array
     {
         return [
 
         ];
     }
 
-    public function filename()
+    public function filename(): string
     {
         return Carbon::now()->format('Ymd His') . ' - {{className}}.csv';
     }
