@@ -3,6 +3,7 @@
 namespace Wyxos\Harmonie\Export\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class Setup extends Command
@@ -13,7 +14,7 @@ class Setup extends Command
 
     public function handle()
     {
-        if (! Schema::hasTable('job_batches')) {
+        if (! DB::table('job_batches')->exists()) {
             $this->call('queue:batches-table');
             $this->call('migrate');
         }
