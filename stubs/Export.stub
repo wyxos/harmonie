@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use {{baseClass}};
 
 class {{className}} extends {{baseClass}}
 {
