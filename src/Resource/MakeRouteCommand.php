@@ -54,7 +54,7 @@ class MakeRouteCommand extends Command
 
         $extendKey = $this->isResource() ? 'resource' : 'route';
 
-        $base = explode('\\', config("resources.extend.{$extendKey}"));
+        $base = explode('\\', config("resource.extend.{$extendKey}"));
 
         $use = join('\\', $base);
 
