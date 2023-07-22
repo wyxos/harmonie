@@ -2,7 +2,6 @@
 
 namespace Wyxos\Harmonie\Export;
 
-use App\Console\Commands\MakeExportCommand;
 use Illuminate\Support\ServiceProvider;
 use Wyxos\Harmonie\Resource\MakeRouteCommand;
 
