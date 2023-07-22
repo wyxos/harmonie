@@ -3,7 +3,12 @@
 namespace Wyxos\Harmonie\Export;
 
 use Illuminate\Database\Eloquent\Model;
-use Wyxos\Harmonie\Export\Jobs\ExportRecords;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Query\Builder;
+use League\Csv\CannotInsertRecord;
+use League\Csv\Exception;
+use League\Csv\UnavailableStream;
 use Wyxos\Harmonie\Export\Models\Export;
 use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
@@ -13,20 +18,48 @@ use Throwable;
 
 abstract class ExportBase
 {
-    public function keys($row)
+    public function keys($row): array
     {
         return array_keys($this->format($row));
     }
 
-    public static function create()
+    abstract public function query(): HasMany|BelongsToMany|Builder|\Illuminate\Database\Eloquent\Builder;
+
+    abstract public function format($row);
+
+    abstract public function filename();
+
+    public function chunkSize(): int
+    {
+        return 100;
+    }
+
+    /**
+     * @throws UnavailableStream
+     * @throws Throwable
+     * @throws CannotInsertRecord
+     * @throws Exception
+     */
+    public static function create(): void
     {
         $instance = new static;
 
-        $chunkSize = 100;
+        $instance->handle();
+    }
 
-        $filename = $instance->filename();
+    /**
+     * @throws UnavailableStream
+     * @throws Throwable
+     * @throws CannotInsertRecord
+     * @throws Exception
+     */
+    public function handle(): void
+    {
+        $chunkSize = $this->chunkSize();
 
-        $count = $instance->query()
+        $filename = $this->filename();
+
+        $count = $this->query()
             ->count();
 
         $path = '/exports/' . $filename;
@@ -60,16 +93,16 @@ abstract class ExportBase
          * @var $index
          * @var Model $row
          */
-        foreach($instance->query()
+        foreach($this->query()
                     ->cursor() as $index => $row){
             $rows[] =  $row;
 
             if($index == 0 && $chunkIndex == 0){
-                $writer->insertOne($instance->keys($row));
+                $writer->insertOne($this->keys($row));
             }
 
             if(count($rows) === $chunkSize){
-                $jobs[] = new $job($rows, $export, $instance);
+                $jobs[] = new $job($rows, $export, $this);
 
                 $rows = [];
 
@@ -78,7 +111,7 @@ abstract class ExportBase
         };
 
         if(count($rows)){
-            $jobs[] = new $job($rows, $export, $instance);
+            $jobs[] = new $job($rows, $export, $this);
 
             $rows = [];
 
