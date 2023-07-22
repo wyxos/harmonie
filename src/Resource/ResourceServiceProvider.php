@@ -10,7 +10,7 @@ class ResourceServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../../config/resources.php' => config_path('resources.php'),
+            __DIR__ . '/../../config/resource.php' => config_path('resource.php'),
         ]);
 
         if ($this->app->runningInConsole()) {
@@ -28,7 +28,7 @@ class ResourceServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../../config/resources.php', 'resources'
+            __DIR__ . '/../../config/resource.php', 'resource'
         );
     }
 }
