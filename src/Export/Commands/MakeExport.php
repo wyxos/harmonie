@@ -1,11 +1,11 @@
 <?php
 
-namespace Wyxos\Harmonie\Export;
+namespace Wyxos\Harmonie\Export\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
-class MakeExportCommand extends Command
+class MakeExport extends Command
 {
     protected $signature = 'make:export {name}';
 
