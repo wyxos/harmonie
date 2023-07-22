@@ -18,6 +18,9 @@ Wyxos Harmonie is designed to be intuitive and easy to use. Detailed usage instr
 
 While this library is designed to work in conjunction with the @wyxos/vision Node.js plugin, they can also be used independently depending on the requirements of your project.
 
+To use the export capabilities, the job_batch table needs to exist. You can either manually generate the migration 
+by running `php artisan queue:batch-table` or `php artisan harmonie:setup`.
+
 ## Support and Contributions
 
 If you encounter any issues or have any questions about Wyxos Harmonie, feel free to submit an issue on the project's GitHub page. Contributions to the project are also welcome!
