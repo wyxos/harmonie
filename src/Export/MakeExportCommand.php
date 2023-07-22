@@ -11,17 +11,17 @@ class MakeExportCommand extends Command
 
     protected $description = 'Create a new export class';
 
-    public function handle()
+    public function handle(): void
     {
         $name = $this->argument('name');
-        $baseClass = config('export.base');
+        $baseClass = config('exports.base');
 
-        $stub = File::get(__DIR__ . '/../../stubs/export.stub');
+        $stub = File::get(__DIR__.'/stubs/export.stub');
 
         $stub = str_replace('{{className}}', $name, $stub);
         $stub = str_replace('{{baseClass}}', class_basename($baseClass), $stub);
+        $stub = str_replace('{{baseClassFull}}', $baseClass, $stub);
 
-        // Ensure Exports directory exists
         File::ensureDirectoryExists(app_path('Exports'));
 
         File::put(app_path("/Exports/{$name}.php"), $stub);
