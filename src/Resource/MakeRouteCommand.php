@@ -80,10 +80,10 @@ class MakeRouteCommand extends Command
     protected function getStub(): string
     {
         if ($this->isResource()) {
-            return __DIR__ . '/../stubs/resource.stub';
+            return __DIR__ . '/../../stubs/resource.stub';
         }
 
-        return __DIR__ . '/../stubs/route.stub';
+        return __DIR__ . '/../../stubs/route.stub';
     }
 
     protected function getRoot(): string

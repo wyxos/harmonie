@@ -16,7 +16,7 @@ class MakeExportCommand extends Command
         $name = $this->argument('name');
         $baseClass = config('exports.base');
 
-        $stub = File::get(__DIR__ . '../../stubs/export.stub');
+        $stub = File::get(__DIR__ . '/../../stubs/export.stub');
 
         $stub = str_replace('{{className}}', $name, $stub);
         $stub = str_replace('{{baseClass}}', class_basename($baseClass), $stub);
