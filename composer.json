@@ -18,12 +18,14 @@
         "laravel": {
             "providers": [
                 "Wyxos\\Harmonie\\Resource\\ResourceServiceProvider",
-                "Wyxos\\Harmonie\\Listing\\ListingServiceProvider"
+                "Wyxos\\Harmonie\\Listing\\ListingServiceProvider",
+                "Wyxos\\Harmonie\\Export\\ExportServiceProvider"
             ]
         }
     },
     "require": {
         "php": ">=8.1",
-        "laravel/framework": "^9.0"
+        "laravel/framework": "^9.0",
+        "league/csv": "^9.0"
     }
 }

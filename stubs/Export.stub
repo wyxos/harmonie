@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Exports;
+
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+
+class {{className}} extends {{baseClass}}
+{
+    public function query()
+    {
+        // return Model::query();
+    }
+
+    public function format($row)
+    {
+        return [
+
+        ];
+    }
+
+    public function filename()
+    {
+        return Carbon::now()->format('Ymd His') . ' - {{className}}.csv';
+    }
+}
