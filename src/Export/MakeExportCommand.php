@@ -21,6 +21,8 @@ class MakeExportCommand extends Command
         $stub = str_replace('{{className}}', $name, $stub);
         $stub = str_replace('{{baseClass}}', class_basename($baseClass), $stub);
 
+        // Ensure Exports directory exists
+        File::ensureDirectoryExists(app_path('Exports'));
 
         File::put(app_path("/Exports/{$name}.php"), $stub);
 
