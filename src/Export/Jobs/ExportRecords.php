@@ -19,23 +19,32 @@ class ExportRecords implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected array $chunk;
-
+//    protected array $chunk;
+//
     protected Export $export;
 
     protected $instance;
+//
+//    /**
+//     * Create a new job instance.
+//     *
+//     * @return void
+//     */
+//    public function __construct($chunk, Export $export, $instance)
+//    {
+//        $this->chunk = $chunk;
+//
+//        $this->export = $export;
+//
+//        $this->instance = $instance;
+//    }
 
-    /**
-     * Create a new job instance.
-     *
-     * @return void
-     */
-    public function __construct($chunk, Export $export, $instance)
+    protected array $ids;
+
+    public function __construct(array $ids, Export $export, $instance)
     {
-        $this->chunk = $chunk;
-
+        $this->ids = $ids;
         $this->export = $export;
-
         $this->instance = $instance;
     }
 
@@ -54,12 +63,20 @@ class ExportRecords implements ShouldQueue
 
         $writer = Writer::createFromPath(Storage::path($this->export->path), 'a+');
 
-        foreach($this->chunk as $row){
+        $rows = $this->instance->query()
+            ->whereIn('id', $this->ids)
+            ->get();
+
+        foreach($rows as $row){
             $writer->insertOne($this->instance->format($row));
         }
 
+//        foreach($this->chunk as $row){
+//            $writer->insertOne($this->instance->format($row));
+//        }
+
         $this->export->update([
-            'value' => $this->export->value += count($this->chunk)
+            'value' => $this->export->value += count($this->ids)
         ]);
     }
 }
