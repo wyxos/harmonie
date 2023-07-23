@@ -31,7 +31,7 @@ abstract class ExportBase
 
     public function chunkSize(): int
     {
-        return 100;
+        return 1000;
     }
 
     /**
@@ -59,8 +59,9 @@ abstract class ExportBase
 
         $filename = $this->filename();
 
-        $count = $this->query()
-            ->count();
+        $ids = $this->query()->pluck('id')->all();
+
+        $chunks = array_chunk($ids, $chunkSize);
 
         $path = '/exports/' . $filename;
 
@@ -69,7 +70,7 @@ abstract class ExportBase
         /** @var Export $export */
         $export = $model::query()->create([
             'path' => $path,
-            'max' => $count,
+            'max' => count($ids),
             'status' => 'initiated'
         ]);
 
@@ -81,41 +82,10 @@ abstract class ExportBase
 
         $jobs = [];
 
-        $rows = [];
-
-        $chunkIndex = 0;
-
-        $chunkCount = ceil($count / $chunkSize);
-
         $job = config('export.job');
 
-        /**
-         * @var $index
-         * @var Model $row
-         */
-        foreach($this->query()
-                    ->cursor() as $index => $row){
-            $rows[] =  $row;
-
-            if($index == 0 && $chunkIndex == 0){
-                $writer->insertOne($this->keys($row));
-            }
-
-            if(count($rows) === $chunkSize){
-                $jobs[] = new $job($rows, $export, $this);
-
-                $rows = [];
-
-                $chunkIndex++;
-            }
-        };
-
-        if(count($rows)){
-            $jobs[] = new $job($rows, $export, $this);
-
-            $rows = [];
-
-            $chunkIndex++;
+        foreach ($chunks as $chunkIds) {
+            $jobs[] = new $job($chunkIds, $export, $this);
         }
 
         $batch = Bus::batch($jobs)->then(function (Batch $batch) use ($export) {
@@ -125,7 +95,6 @@ abstract class ExportBase
             ]);
         })->catch(function (Batch $batch, Throwable $e) use ($export) {
             // First batch job failure detected...
-
             $export->update([
                 'status' => 'error',
             ]);
@@ -136,5 +105,94 @@ abstract class ExportBase
         $export->update([
             'batch' => $batch->id,
         ]);
+//        $chunkSize = $this->chunkSize();
+//
+//        $filename = $this->filename();
+//
+//        $count = $this->query()
+//            ->count();
+//
+//        $path = '/exports/' . $filename;
+//
+//        $model = config('export.model');
+//
+//        /** @var Export $export */
+//        $export = $model::query()->create([
+//            'path' => $path,
+//            'max' => $count,
+//            'status' => 'initiated'
+//        ]);
+//
+//        if(!Storage::exists($export->path)){
+//            Storage::put($export->path, '');
+//        }
+//
+//        $writer = Writer::createFromPath(Storage::path($export->path));
+//
+//        $jobs = [];
+//
+//        $rows = [];
+//
+//        $chunkIndex = 0;
+//
+//        $chunkCount = ceil($count / $chunkSize);
+//
+//        $job = config('export.job');
+//
+//        /**
+//         * @var $index
+//         * @var Model $row
+//         */
+//        foreach($this->query()
+//                    ->cursor() as $index => $row){
+//            $rows[] =  $row;
+//
+//            if($index == 0 && $chunkIndex == 0){
+//                $writer->insertOne($this->keys($row));
+//            }
+//
+//            if(count($rows) === $chunkSize){
+//                $jobs[] = new $job($rows, $export, $this);
+//
+//                $rows = [];
+//
+//                $chunkIndex++;
+//            }
+//        };
+//
+//        if(count($rows)){
+//            $jobs[] = new $job($rows, $export, $this);
+//
+//            $rows = [];
+//
+//            $chunkIndex++;
+//        }
+//
+//        $ids = $this->query()->pluck('id')->all();
+//
+//        $chunks = array_chunk($ids, $chunkSize);
+//
+//        foreach ($chunks as $chunkIds) {
+//            $jobs[] = new $job($chunkIds, $export, $this);
+//        }
+//
+//        $batch = Bus::batch($jobs)->then(function (Batch $batch) use ($export) {
+//            // All jobs completed successfully...
+//            $export->update([
+//                'status' => 'complete'
+//            ]);
+//        })->catch(function (Batch $batch, Throwable $e) use ($export) {
+//            // First batch job failure detected...
+//
+//            $export->update([
+//                'status' => 'error',
+//            ]);
+//        })->finally(function (Batch $batch) use ($export) {
+//            // The batch has finished executing...
+//        })->name($filename)->dispatch();
+//
+//        $export->update([
+//            'batch' => $batch->id,
+//        ]);
     }
 }
