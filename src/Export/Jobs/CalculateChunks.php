@@ -17,6 +17,7 @@ use League\Csv\Exception;
 use League\Csv\UnavailableStream;
 use League\Csv\Writer;
 use Throwable;
+use Wyxos\Harmonie\Export\Events\ExportUpdate;
 use Wyxos\Harmonie\Export\ExportBase;
 use Wyxos\Harmonie\Export\Models\Export;
 
@@ -54,6 +55,8 @@ class CalculateChunks implements ShouldQueue
             'status' => 'calculating'
         ]);
 
+        event(new ExportUpdate($export));
+
         $builder = $instance->query();
 
         if (method_exists($instance, 'filter')) {
@@ -71,6 +74,8 @@ class CalculateChunks implements ShouldQueue
         $export->update([
             'max' => count($ids)
         ]);
+
+        event(new ExportUpdate($export));
 
         $writer = Writer::createFromPath(Storage::path($export->path));
 
@@ -93,11 +98,15 @@ class CalculateChunks implements ShouldQueue
             $export->update([
                 'status' => 'complete'
             ]);
+
+            event( new ExportUpdate($export));
         })->catch(function (Batch $batch, Throwable $e) use ($export) {
             // First batch job failure detected...
             $export->update([
                 'status' => 'error',
             ]);
+
+            event( new ExportUpdate($export));
         })->finally(function (Batch $batch) {
             // The batch has finished executing...
         })->name(basename($export->path))->dispatch();
@@ -105,5 +114,7 @@ class CalculateChunks implements ShouldQueue
         $export->update([
             'batch' => $batch->id,
         ]);
+
+        event(new ExportUpdate($export));
     }
 }

@@ -5,6 +5,7 @@ namespace Wyxos\Harmonie\Export\Jobs;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\UnavailableStream;
+use Wyxos\Harmonie\Export\Events\ExportUpdate;
 use Wyxos\Harmonie\Export\ExportBase;
 use Wyxos\Harmonie\Export\Models\Export;
 use Illuminate\Bus\Batchable;
@@ -90,5 +91,7 @@ class ExportRecords implements ShouldQueue
         $this->export->update([
             'value' => $this->export->value += count($this->ids)
         ]);
+
+        event( new ExportUpdate($this->export));
     }
 }

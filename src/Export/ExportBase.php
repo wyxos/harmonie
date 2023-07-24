@@ -32,7 +32,7 @@ abstract class ExportBase
 
     public function chunkSize(): int
     {
-        return 1000;
+        return 100;
     }
 
     /**
