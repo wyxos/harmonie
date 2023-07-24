@@ -10,7 +10,7 @@ class ListingServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../../config/listing.php' => config_path('listing.php'),
-        ]);
+        ], 'harmonie:listing-config');
 
         if ($this->app->runningInConsole()) {
             $this->commands([

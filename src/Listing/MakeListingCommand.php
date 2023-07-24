@@ -81,7 +81,7 @@ class MakeListingCommand extends Command
 
     protected function getStub(): string
     {
-        return __DIR__ . '/../stubs/Listing.stub';
+        return __DIR__ . '/../../stubs/Listing.stub';
     }
 
     protected function getRoot(): string
