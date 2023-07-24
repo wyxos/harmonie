@@ -11,7 +11,7 @@ class ResourceServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../../config/resource.php' => config_path('resource.php'),
-        ]);
+        ], 'harmonie:resource-config');
 
         if ($this->app->runningInConsole()) {
             $this->commands([

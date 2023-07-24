@@ -2,19 +2,20 @@
 
 namespace Wyxos\Harmonie\Export;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Bus\Batch;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\UnavailableStream;
-use Wyxos\Harmonie\Export\Models\Export;
-use Illuminate\Bus\Batch;
-use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Storage;
 use League\Csv\Writer;
 use Throwable;
+use Wyxos\Harmonie\Export\Jobs\CalculateChunks;
+use Wyxos\Harmonie\Export\Models\Export;
 
 abstract class ExportBase
 {
@@ -40,11 +41,11 @@ abstract class ExportBase
      * @throws CannotInsertRecord
      * @throws Exception
      */
-    public static function create(): void
+    public static function create(): Export
     {
         $instance = new static;
 
-        $instance->handle();
+        return $instance->handle();
     }
 
     /**
@@ -53,146 +54,30 @@ abstract class ExportBase
      * @throws CannotInsertRecord
      * @throws Exception
      */
-    public function handle(): void
+    public function handle(): Export
     {
-        $chunkSize = $this->chunkSize();
+        $model = config('export.model');
 
         $filename = $this->filename();
 
-        $ids = $this->query()->pluck('id')->all();
-
-        $chunks = array_chunk($ids, $chunkSize);
-
         $path = '/exports/' . $filename;
-
-        $model = config('export.model');
 
         /** @var Export $export */
         $export = $model::query()->create([
             'path' => $path,
-            'max' => count($ids),
             'status' => 'initiated'
         ]);
 
-        if(!Storage::exists($export->path)){
+        if (!Storage::exists($export->path)) {
+            File::ensureDirectoryExists(Storage::path('/exports/'));
+
             Storage::put($export->path, '');
         }
 
-        $writer = Writer::createFromPath(Storage::path($export->path));
+        $filters = request()->all();
 
-        $jobs = [];
+        CalculateChunks::dispatch($export, $filters, get_class($this));
 
-        $job = config('export.job');
-
-        foreach ($chunks as $chunkIds) {
-            $jobs[] = new $job($chunkIds, $export, $this);
-        }
-
-        $batch = Bus::batch($jobs)->then(function (Batch $batch) use ($export) {
-            // All jobs completed successfully...
-            $export->update([
-                'status' => 'complete'
-            ]);
-        })->catch(function (Batch $batch, Throwable $e) use ($export) {
-            // First batch job failure detected...
-            $export->update([
-                'status' => 'error',
-            ]);
-        })->finally(function (Batch $batch) use ($export) {
-            // The batch has finished executing...
-        })->name($filename)->dispatch();
-
-        $export->update([
-            'batch' => $batch->id,
-        ]);
-//        $chunkSize = $this->chunkSize();
-//
-//        $filename = $this->filename();
-//
-//        $count = $this->query()
-//            ->count();
-//
-//        $path = '/exports/' . $filename;
-//
-//        $model = config('export.model');
-//
-//        /** @var Export $export */
-//        $export = $model::query()->create([
-//            'path' => $path,
-//            'max' => $count,
-//            'status' => 'initiated'
-//        ]);
-//
-//        if(!Storage::exists($export->path)){
-//            Storage::put($export->path, '');
-//        }
-//
-//        $writer = Writer::createFromPath(Storage::path($export->path));
-//
-//        $jobs = [];
-//
-//        $rows = [];
-//
-//        $chunkIndex = 0;
-//
-//        $chunkCount = ceil($count / $chunkSize);
-//
-//        $job = config('export.job');
-//
-//        /**
-//         * @var $index
-//         * @var Model $row
-//         */
-//        foreach($this->query()
-//                    ->cursor() as $index => $row){
-//            $rows[] =  $row;
-//
-//            if($index == 0 && $chunkIndex == 0){
-//                $writer->insertOne($this->keys($row));
-//            }
-//
-//            if(count($rows) === $chunkSize){
-//                $jobs[] = new $job($rows, $export, $this);
-//
-//                $rows = [];
-//
-//                $chunkIndex++;
-//            }
-//        };
-//
-//        if(count($rows)){
-//            $jobs[] = new $job($rows, $export, $this);
-//
-//            $rows = [];
-//
-//            $chunkIndex++;
-//        }
-//
-//        $ids = $this->query()->pluck('id')->all();
-//
-//        $chunks = array_chunk($ids, $chunkSize);
-//
-//        foreach ($chunks as $chunkIds) {
-//            $jobs[] = new $job($chunkIds, $export, $this);
-//        }
-//
-//        $batch = Bus::batch($jobs)->then(function (Batch $batch) use ($export) {
-//            // All jobs completed successfully...
-//            $export->update([
-//                'status' => 'complete'
-//            ]);
-//        })->catch(function (Batch $batch, Throwable $e) use ($export) {
-//            // First batch job failure detected...
-//
-//            $export->update([
-//                'status' => 'error',
-//            ]);
-//        })->finally(function (Batch $batch) use ($export) {
-//            // The batch has finished executing...
-//        })->name($filename)->dispatch();
-//
-//        $export->update([
-//            'batch' => $batch->id,
-//        ]);
+        return $export;
     }
 }

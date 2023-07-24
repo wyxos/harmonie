@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Wyxos\Harmonie\Export\Commands\MakeExport;
 use Wyxos\Harmonie\Export\Commands\Setup;
-use Wyxos\Harmonie\Resource\MakeRouteCommand;
 
 class ExportServiceProvider extends ServiceProvider
 {
@@ -14,13 +13,7 @@ class ExportServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../../config/export.php' => config_path('export.php'),
-        ]);
-
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                MakeRouteCommand::class
-            ]);
-        }
+        ], 'harmonie:export-config');
 
         $this->loadMigrationsFrom(__DIR__ . '/../../migrations/export');
 
@@ -33,7 +26,7 @@ class ExportServiceProvider extends ServiceProvider
             // Publish migrations
             $this->publishes([
                 __DIR__.'/../../migrations/export' => database_path('migrations')
-            ], 'migrations');
+            ], 'harmonie:export-migrations');
         }
     }
 

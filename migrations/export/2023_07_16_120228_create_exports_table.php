@@ -16,10 +16,13 @@ return new class extends Migration
         Schema::create('exports', function (Blueprint $table) {
             $table->id();
             $table->string('path');
-            $table->unsignedBigInteger('max');
+            $table->unsignedBigInteger('max')->default(0);
             $table->unsignedBigInteger('value')->default(0);
             $table->string('status');
+            $table->string('batch')->nullable();
             $table->timestamps();
+            $table->timestamp('expires_at')
+                ->nullable();
         });
     }
 
