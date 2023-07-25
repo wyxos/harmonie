@@ -28,25 +28,11 @@ class ExportRecords implements ShouldQueue
 //
     protected Export $export;
 
-    protected $instance;
-//
-//    /**
-//     * Create a new job instance.
-//     *
-//     * @return void
-//     */
-//    public function __construct($chunk, Export $export, $instance)
-//    {
-//        $this->chunk = $chunk;
-//
-//        $this->export = $export;
-//
-//        $this->instance = $instance;
-//    }
+    protected string $instance;
 
     protected array $ids;
 
-    public function __construct(array $ids, Export $export, $instance)
+    public function __construct(array $ids, Export $export, string $instance)
     {
         $this->ids = $ids;
         $this->export = $export;
@@ -80,7 +66,7 @@ class ExportRecords implements ShouldQueue
 
         $writer = Writer::createFromPath(Storage::path($this->export->path), 'a+');
 
-        $rows = $instance->query()
+        $rows = $instance->chunkQuery()
             ->whereIn('id', $this->ids)
             ->get();
 
@@ -89,9 +75,9 @@ class ExportRecords implements ShouldQueue
         }
 
         $this->export->update([
-            'value' => $this->export->value += count($this->ids)
+            'value' => DB::raw('value + ' . count($this->ids))
         ]);
 
-        event( new ExportUpdate($this->export));
+        $this->export->broadcastUpdate();
     }
 }
