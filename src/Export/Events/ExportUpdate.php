@@ -38,6 +38,4 @@ class ExportUpdate implements ShouldBroadcastNow
             new Channel('export-update'),
         ];
     }
-
-
 }

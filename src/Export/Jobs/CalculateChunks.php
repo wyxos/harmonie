@@ -5,6 +5,7 @@ namespace Wyxos\Harmonie\Export\Jobs;
 use Illuminate\Bus\Batch;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -25,14 +26,17 @@ class CalculateChunks implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    protected Authenticatable|null $user;
+
     protected Export $export;
 
     protected array $filters;
 
-    protected $instance;
+    protected string $instance;
 
-    public function __construct(Export $export, array $filters, $instance)
+    public function __construct(Authenticatable $user = null, Export $export, array $filters, string $instance)
     {
+        $this->user = $user;
         $this->export = $export;
         $this->filters = $filters;
         $this->instance = $instance;
@@ -55,9 +59,9 @@ class CalculateChunks implements ShouldQueue
             'status' => 'calculating'
         ]);
 
-        event(new ExportUpdate($export));
+        $export->broadcastUpdate();
 
-        $builder = $instance->query();
+        $builder = $instance->query($this->user);
 
         if (method_exists($instance, 'filter')) {
             $request = request()->merge($this->filters);
@@ -75,11 +79,11 @@ class CalculateChunks implements ShouldQueue
             'max' => count($ids)
         ]);
 
-        event(new ExportUpdate($export));
+        $export->broadcastUpdate();
 
         $writer = Writer::createFromPath(Storage::path($export->path));
 
-        $firstRecord = $instance->query()->where('id', $ids[0])->first();
+        $firstRecord = $instance->chunkQuery()->find($ids[0]);
 
         $header = $instance->keys($firstRecord);
 
@@ -99,14 +103,14 @@ class CalculateChunks implements ShouldQueue
                 'status' => 'complete'
             ]);
 
-            event( new ExportUpdate($export));
+            $export->broadcastUpdate();
         })->catch(function (Batch $batch, Throwable $e) use ($export) {
             // First batch job failure detected...
             $export->update([
                 'status' => 'error',
             ]);
 
-            event( new ExportUpdate($export));
+            $export->broadcastUpdate();
         })->finally(function (Batch $batch) {
             // The batch has finished executing...
         })->name(basename($export->path))->dispatch();
@@ -115,6 +119,6 @@ class CalculateChunks implements ShouldQueue
             'batch' => $batch->id,
         ]);
 
-        event(new ExportUpdate($export));
+        $export->broadcastUpdate();
     }
 }

@@ -3,6 +3,8 @@
 namespace Wyxos\Harmonie\Export;
 
 use Illuminate\Bus\Batch;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Builder as EloquentBUilder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Query\Builder;
@@ -19,12 +21,17 @@ use Wyxos\Harmonie\Export\Models\Export;
 
 abstract class ExportBase
 {
+    protected ?Authenticatable $user;
+
     public function keys($row): array
     {
         return array_keys($this->format($row));
     }
 
-    abstract public function query(): HasMany|BelongsToMany|Builder|\Illuminate\Database\Eloquent\Builder;
+    abstract public function query(Authenticatable $user = null):
+    HasMany|BelongsToMany|Builder|EloquentBUilder;
+
+    abstract public function chunkQuery(): HasMany|BelongsToMany|Builder|EloquentBUilder;
 
     abstract public function format($row);
 
@@ -35,15 +42,20 @@ abstract class ExportBase
         return 100;
     }
 
+    public function __construct(Authenticatable $user = null)
+    {
+        $this->user = $user;
+    }
+
     /**
      * @throws UnavailableStream
      * @throws Throwable
      * @throws CannotInsertRecord
      * @throws Exception
      */
-    public static function create(): Export
+    public static function create(Authenticatable $user = null): Export
     {
-        $instance = new static;
+        $instance = new static($user);
 
         return $instance->handle();
     }
@@ -65,7 +77,7 @@ abstract class ExportBase
         /** @var Export $export */
         $export = $model::query()->create([
             'path' => $path,
-            'status' => 'initiated'
+            'status' => 'pending'
         ]);
 
         if (!Storage::exists($export->path)) {
@@ -76,7 +88,7 @@ abstract class ExportBase
 
         $filters = request()->all();
 
-        CalculateChunks::dispatch($export, $filters, get_class($this));
+        CalculateChunks::dispatch($this->user, $export, $filters, get_class($this));
 
         return $export;
     }
