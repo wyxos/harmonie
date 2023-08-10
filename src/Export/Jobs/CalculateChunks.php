@@ -113,7 +113,7 @@ class CalculateChunks implements ShouldQueue
             $export->broadcastUpdate();
         })->finally(function (Batch $batch) {
             // The batch has finished executing...
-        })->name(basename($export->path))->dispatch();
+        })->name(basename($export->path))->onQueue(config('export.queue'))->dispatch();
 
         $export->update([
             'batch' => $batch->id,
