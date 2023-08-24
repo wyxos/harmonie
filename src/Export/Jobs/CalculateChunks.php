@@ -101,7 +101,7 @@ class CalculateChunks implements ShouldQueue
             ]);
 
             if(method_exists($export, 'onComplete')){
-                $export->onComplete($batch, $parameters);
+                $export->onComplete($parameters, $batch);
             }
 
             $export->broadcastUpdate();
