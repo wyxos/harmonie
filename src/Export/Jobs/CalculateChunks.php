@@ -92,14 +92,16 @@ class CalculateChunks implements ShouldQueue
             $jobs[] = new $job($chunkIds, $export, get_class($instance));
         }
 
-        $batch = Bus::batch($jobs)->then(function (Batch $batch) use ($export) {
+        $parameters = $this->parameters;
+
+        $batch = Bus::batch($jobs)->then(function (Batch $batch) use ($export, $parameters) {
             // All jobs completed successfully...
             $export->update([
                 'status' => 'complete'
             ]);
 
             if(method_exists($export, 'onComplete')){
-                $export->onComplete($batch, $this->parameters);
+                $export->onComplete($batch, $parameters);
             }
 
             $export->broadcastUpdate();
