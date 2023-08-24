@@ -21,15 +21,14 @@ use Wyxos\Harmonie\Export\Models\Export;
 
 abstract class ExportBase
 {
-    protected ?Authenticatable $user;
+    protected array $parameters;
 
     public function keys($row): array
     {
         return array_keys($this->format($row));
     }
 
-    abstract public function query(Authenticatable $user = null):
-    HasMany|BelongsToMany|Builder|EloquentBUilder;
+    abstract public function query(array $parameters = []): HasMany|BelongsToMany|Builder|EloquentBUilder;
 
     abstract public function chunkQuery(): HasMany|BelongsToMany|Builder|EloquentBUilder;
 
@@ -42,9 +41,9 @@ abstract class ExportBase
         return 100;
     }
 
-    public function __construct(Authenticatable $user = null)
+    public function __construct(array $parameters = [])
     {
-        $this->user = $user;
+        $this->parameters = $parameters;
     }
 
     /**
@@ -53,9 +52,9 @@ abstract class ExportBase
      * @throws CannotInsertRecord
      * @throws Exception
      */
-    public static function create(Authenticatable $user = null): Export
+    public static function create(array $parameters = []): Export
     {
-        $instance = new static($user);
+        $instance = new static($parameters);
 
         return $instance->handle();
     }
@@ -86,9 +85,7 @@ abstract class ExportBase
             Storage::put($export->path, '');
         }
 
-        $filters = request()->all();
-
-        CalculateChunks::dispatch($this->user, $export, $filters, get_class($this));
+        CalculateChunks::dispatch($export, get_class($this), $this->parameters);
 
         return $export;
     }

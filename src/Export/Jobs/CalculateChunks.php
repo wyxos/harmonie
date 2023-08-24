@@ -26,20 +26,17 @@ class CalculateChunks implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected Authenticatable|null $user;
+    protected array $parameters;
 
     protected Export $export;
 
-    protected array $filters;
-
     protected string $instance;
 
-    public function __construct(Authenticatable $user = null, Export $export, array $filters, string $instance)
+    public function __construct(Export $export, string $instance, array $parameters = [])
     {
-        $this->user = $user;
         $this->export = $export;
-        $this->filters = $filters;
         $this->instance = $instance;
+        $this->parameters = $parameters;
     }
 
     /**
@@ -51,7 +48,7 @@ class CalculateChunks implements ShouldQueue
     public function handle(): void
     {
         /** @var ExportBase $instance */
-        $instance = new $this->instance;
+        $instance = new $this->instance($this->parameters);
 
         $export = $this->export;
 
@@ -61,12 +58,10 @@ class CalculateChunks implements ShouldQueue
 
         $export->broadcastUpdate();
 
-        $builder = $instance->query($this->user);
+        $builder = $instance->query($this->parameters);
 
         if (method_exists($instance, 'filter')) {
-            $request = request()->merge($this->filters);
-
-            $instance->filter($builder, $request);
+            $instance->filter($builder);
         }
 
         $chunkSize = $instance->chunkSize();
@@ -102,6 +97,10 @@ class CalculateChunks implements ShouldQueue
             $export->update([
                 'status' => 'complete'
             ]);
+
+            if(method_exists($export, 'onComplete')){
+                $export->onComplete($batch, $this->parameters);
+            }
 
             $export->broadcastUpdate();
         })->catch(function (Batch $batch, Throwable $e) use ($export) {
