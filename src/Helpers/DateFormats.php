@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace Wyxos\Harmonie\Helpers;
 
 class DateFormats
 {
