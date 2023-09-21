@@ -3,8 +3,6 @@
 namespace Wyxos\Harmonie\Listing;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 abstract class ListingBase

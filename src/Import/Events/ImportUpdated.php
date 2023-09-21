@@ -1,37 +1,38 @@
 <?php
 
-namespace Wyxos\Harmonie\Export\Events;
+namespace Wyxos\Harmonie\Import\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Wyxos\Harmonie\Export\Models\Export;
+use Wyxos\Harmonie\Import\Models\Import;
 
-class ExportUpdate implements ShouldBroadcastNow
+class ImportUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public Export $export;
+    public Import $import;
 
     /**
      * Create a new event instance.
+     *
+     * @return void
      */
-    public function __construct(Export $export)
+    public function __construct(Import $import)
     {
-        $this->export = $export;
+        $this->import = $import;
     }
 
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
+     * @return Channel|array
      */
-    public function broadcastOn(): array
+    public function broadcastOn()
     {
-        return [
-            new Channel('export-update'),
-        ];
+        return new PrivateChannel('imports');
     }
 }

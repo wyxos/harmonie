@@ -2,7 +2,6 @@
 
 namespace Wyxos\Harmonie\Export;
 
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Wyxos\Harmonie\Export\Commands\MakeExport;
 use Wyxos\Harmonie\Export\Commands\Setup;
