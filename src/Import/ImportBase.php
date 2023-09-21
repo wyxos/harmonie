@@ -4,7 +4,7 @@ namespace Wyxos\Harmonie\Import;
 
 use Wyxos\Harmonie\Import\Models\Import;
 
-abstract class BaseImport {
+abstract class ImportBase {
     protected $chunkSize = 100;
 
     abstract public function rules(object $row);

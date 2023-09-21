@@ -1,15 +1,15 @@
 <?php
 
-namespace Wyxos\Harmonie\Export\Commands;
+namespace Wyxos\Harmonie\Import\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class Setup extends Command
 {
-    protected $signature = 'harmonie:exports-setup';
+    protected $signature = 'harmonie:imports-setup';
 
-    protected $description = 'Setup Harmonie Export package';
+    protected $description = 'Setup Harmonie Import package';
 
     public function handle()
     {
@@ -18,7 +18,7 @@ class Setup extends Command
             $this->call('migrate');
         }
 
-        if (! DB::table('exports')->exists()) {
+        if (! DB::table('imports')->exists()) {
             $this->call('migrate');
         }
     }

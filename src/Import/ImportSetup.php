@@ -23,14 +23,14 @@ class ImportSetup implements ShouldQueue
 
     protected Import $import;
 
-    protected BaseImport $instance;
+    protected ImportBase $instance;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(Import $import, BaseImport $instance)
+    public function __construct(Import $import, ImportBase $instance)
     {
         $this->import = $import;
 

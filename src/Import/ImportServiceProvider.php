@@ -3,6 +3,8 @@
 namespace Wyxos\Harmonie\Import;
 
 use Illuminate\Support\ServiceProvider;
+use Wyxos\Harmonie\Import\Commands\MakeImport;
+use Wyxos\Harmonie\Import\Commands\Setup;
 
 class ImportServiceProvider extends ServiceProvider
 {
@@ -16,6 +18,8 @@ class ImportServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
+                Setup::class,
+                MakeImport::class,
             ]);
 
             // Publish migrations

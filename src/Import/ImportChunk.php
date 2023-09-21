@@ -25,7 +25,7 @@ class ImportChunk implements ShouldQueue
 
     protected Import $import;
 
-    protected BaseImport $instance;
+    protected ImportBase $instance;
 
     /**
      * Create a new job instance.

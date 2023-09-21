@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Imports;
+
+use {{baseClassFull}};
+
+class {{className}} extends {{baseClass}}
+{
+    public function rules($row): array
+    {
+        return [
+            /** TODO validation rules for $row */
+        ];
+    }
+
+    public function processRow($row) {
+        /** TODO logic to process $row here. */
+    }
+}
