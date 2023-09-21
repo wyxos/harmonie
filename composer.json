@@ -19,7 +19,8 @@
             "providers": [
                 "Wyxos\\Harmonie\\Resource\\ResourceServiceProvider",
                 "Wyxos\\Harmonie\\Listing\\ListingServiceProvider",
-                "Wyxos\\Harmonie\\Export\\ExportServiceProvider"
+                "Wyxos\\Harmonie\\Export\\ExportServiceProvider",
+                "Wyxos\\Harmonie\\Harmonie\\HarmonieServiceProvider"
             ]
         }
     },
