@@ -2,23 +2,19 @@
 
 namespace Wyxos\Harmonie\Export\Jobs;
 
-use League\Csv\CannotInsertRecord;
-use League\Csv\Exception;
-use League\Csv\UnavailableStream;
-use Wyxos\Harmonie\Export\Events\ExportUpdate;
-use Wyxos\Harmonie\Export\ExportBase;
-use Wyxos\Harmonie\Export\Models\Export;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\CannotInsertRecord;
+use League\Csv\Exception;
+use League\Csv\UnavailableStream;
 use League\Csv\Writer;
+use Wyxos\Harmonie\Export\Models\Export;
 
 class ExportRecords implements ShouldQueue
 {

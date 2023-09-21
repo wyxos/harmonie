@@ -2,7 +2,6 @@
 
 namespace Wyxos\Harmonie\Resource;
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class ResourceServiceProvider extends ServiceProvider

@@ -20,6 +20,7 @@
                 "Wyxos\\Harmonie\\Resource\\ResourceServiceProvider",
                 "Wyxos\\Harmonie\\Listing\\ListingServiceProvider",
                 "Wyxos\\Harmonie\\Export\\ExportServiceProvider",
+                "Wyxos\\Harmonie\\Import\\ImportServiceProvider",
                 "Wyxos\\Harmonie\\Harmonie\\HarmonieServiceProvider"
             ]
         }

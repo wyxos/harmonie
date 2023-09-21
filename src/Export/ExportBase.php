@@ -2,19 +2,15 @@
 
 namespace Wyxos\Harmonie\Export;
 
-use Illuminate\Bus\Batch;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder as EloquentBUilder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\UnavailableStream;
-use League\Csv\Writer;
 use Throwable;
 use Wyxos\Harmonie\Export\Jobs\CalculateChunks;
 use Wyxos\Harmonie\Export\Models\Export;
