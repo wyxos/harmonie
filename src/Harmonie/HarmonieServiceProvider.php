@@ -22,8 +22,8 @@ class HarmonieServiceProvider extends ServiceProvider
 
     public function register()
     {
-//        $this->mergeConfigFrom(
-//            __DIR__ . '/../../config/resource.php', 'resource'
-//        );
+        $this->mergeConfigFrom(
+            __DIR__ . '/../../config/harmonie.php', 'harmonie'
+        );
     }
 }
