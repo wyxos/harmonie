@@ -29,6 +29,18 @@ class Import extends Model
         return $this->hasMany(ImportLog::class);
     }
 
+    public function successfulLogs(): HasMany
+    {
+        return $this->logs()
+            ->where('status', 'success');
+    }
+
+    public function errorLogs(): HasMany
+    {
+        return $this->logs()
+            ->where('status', 'error');
+    }
+
     public function updateAndBroadcast(array $array = null): static
     {
         if ($array) {
