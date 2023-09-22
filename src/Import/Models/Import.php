@@ -29,13 +29,13 @@ class Import extends Model
         return $this->hasMany(ImportLog::class);
     }
 
-    public function successfulLogs(): HasMany
+    public function successfulRows(): HasMany
     {
         return $this->logs()
             ->where('status', 'success');
     }
 
-    public function errorLogs(): HasMany
+    public function failedRows(): HasMany
     {
         return $this->logs()
             ->where('status', 'error');
