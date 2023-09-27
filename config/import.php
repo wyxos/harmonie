@@ -11,5 +11,9 @@ return [
     'events' => [
         'import' => \Wyxos\Harmonie\Import\Events\ImportUpdated::class,
         'row' => \Wyxos\Harmonie\Import\Events\RowImported::class,
+    ],
+    'queue' => [
+        'setup' => 'import',
+        'chunk' => 'import',
     ]
 ];

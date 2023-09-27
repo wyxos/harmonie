@@ -41,6 +41,8 @@ class ImportChunk implements ShouldQueue
         $this->import = $import;
 
         $this->instance = $instance;
+
+        $this->onQueue(config('import.queue.chunk'));
     }
 
     /**

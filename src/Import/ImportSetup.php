@@ -35,6 +35,8 @@ class ImportSetup implements ShouldQueue
         $this->import = $import;
 
         $this->instance = $instance;
+
+        $this->onQueue(config('import.queue.setup'));
     }
 
     public function handle(): string
@@ -111,7 +113,7 @@ class ImportSetup implements ShouldQueue
 
                 throw $e;
             })
-            ->onQueue('import')
+            ->onQueue(config('import.queue.setup'))
             ->dispatch();
 
         return $batch->id;
