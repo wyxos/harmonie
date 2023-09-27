@@ -94,16 +94,20 @@ class ImportSetup implements ShouldQueue
             $jobs[] = new ImportChunk($this->import, $this->instance, $chunkFile, $i);
         }
 
-        $import = $this->import;
+        $id = $this->import->id;
 
         // Dispatch batch
         $batch = Bus::batch($jobs)
-            ->then(function () use ($import) {
+            ->then(function () use ($id) {
+                $import = Import::query()->find($id);
+
                 $import->updateAndBroadcast([
                     'status' => 'completed'
                 ]);
             })
-            ->catch(function (Batch $batch, Throwable $e) use ($import) {
+            ->catch(function (Batch $batch, Throwable $e) use ($id) {
+                $import = Import::query()->find($id);
+
                 $import->updateAndBroadcast([
                     'status' => 'failed',
                     'validation' => [
