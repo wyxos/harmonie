@@ -13,7 +13,7 @@ abstract class ImportBase {
 
     }
 
-    abstract public function processRow($row);
+    abstract public function processRow($row, $index);
 
     public function getChunkSize() {
         return $this->chunkSize;

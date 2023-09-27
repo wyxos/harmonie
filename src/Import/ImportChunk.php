@@ -93,7 +93,7 @@ class ImportChunk implements ShouldQueue
 
                 event(new RowImported($log));
             } else {
-                $this->instance->processRow($row);
+                $this->instance->processRow($row, $rowNumber);
 
                 /** @var ImportLog $log */
                 $log = ImportLog::query()->create([
