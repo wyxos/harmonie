@@ -99,14 +99,14 @@ class ImportSetup implements ShouldQueue
         // Dispatch batch
         $batch = Bus::batch($jobs)
             ->then(function () use ($id) {
-                $import = Import::query()->find($id);
+                $import = Import::query()->withCount(['successfulRows', 'failedRows'])->find($id);
 
                 $import->updateAndBroadcast([
                     'status' => 'completed'
                 ]);
             })
             ->catch(function (Batch $batch, Throwable $e) use ($id) {
-                $import = Import::query()->find($id);
+                $import = Import::query()->withCount(['successfulRows', 'failedRows'])->find($id);
 
                 $import->updateAndBroadcast([
                     'status' => 'failed',
