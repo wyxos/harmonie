@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->id();
             $table
                 ->foreignId('import_id')
-                ->constrained('imports')
+                ->constrained()
                 ->cascadeOnDelete();
             $table->unsignedBigInteger('row_number')->default(0);
             $table->string('status');
