@@ -1,0 +1,22 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Model;
+
+/**
+ * Columns
+ * @property int id
+ * @property Carbon|null created_at
+ * @property Carbon|null updated_at
+ *
+ * Relationships
+ *
+ * Getters
+ *
+ */
+class {{ class }} extends Model
+{
+    use HasFactory;
+}

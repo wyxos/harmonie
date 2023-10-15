@@ -1,0 +1,19 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Database\Eloquent\Relations\MorphPivot;
+
+/**
+ * Columns
+ * @property int id
+ *
+ * Relationships
+ *
+ * Getters
+ *
+ */
+class {{ class }} extends MorphPivot
+{
+    //
+}

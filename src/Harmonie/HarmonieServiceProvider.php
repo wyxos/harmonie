@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Wyxos\Harmonie\Harmonie\Commands\ClearAllCache;
 use Wyxos\Harmonie\Harmonie\Commands\FlushRedis;
 use Wyxos\Harmonie\Harmonie\Commands\GenerateAdministrator;
+use Wyxos\Harmonie\Harmonie\Commands\ModelMakeCommand;
 use Wyxos\Harmonie\Harmonie\Commands\ScoutReset;
 
 class HarmonieServiceProvider extends ServiceProvider
@@ -22,6 +23,7 @@ class HarmonieServiceProvider extends ServiceProvider
                 FlushRedis::class,
                 GenerateAdministrator::class,
                 ScoutReset::class,
+                ModelMakeCommand::class,
             ]);
         }
     }
