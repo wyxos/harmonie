@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use League\Csv\Reader;
 use Wyxos\Harmonie\Import\Events\RowImported;
 use Wyxos\Harmonie\Import\Models\Import;
@@ -32,7 +33,7 @@ class ImportChunk implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(Import $import, $instance, $path, $index)
+    public function __construct(Import $import, ImportBase $instance, $path, $index)
     {
         $this->path = $path;
 
@@ -69,8 +70,12 @@ class ImportChunk implements ShouldQueue
 
         // Loop through each record and process
         foreach ($csv->getRecords($headers) as $record) {
+
             $row = (object) collect($record)
-                ->mapWithKeys(fn($value, $key) => [Str::snake($key) => $value])
+                ->mapWithKeys(fn($value, $key) => [method_exists( $this->instance, 'columnMap') ?
+                    $this->instance->columnMap()[$key] :
+                    Str::snake($key) => $value ?: null]
+                )
                 ->toArray();
 
             $this->instance->beforeValidation($row);
@@ -95,16 +100,42 @@ class ImportChunk implements ShouldQueue
 
                 event(new RowImported($log));
             } else {
-                $this->instance->processRow($row, $rowNumber);
+                try {
+                    $this->instance->setImport($this->import)
+                        ->processRow($row, $rowNumber);
 
-                /** @var ImportLog $log */
-                $log = ImportLog::query()->create([
-                    'import_id' => $this->import->id,
-                    'row_number' => $rowNumber,
-                    'status' => 'success'
-                ]);
+                    /** @var ImportLog $log */
+                    $log = ImportLog::query()->create([
+                        'import_id' => $this->import->id,
+                        'row_number' => $rowNumber,
+                        'status' => 'success'
+                    ]);
 
-                event(new RowImported($log));
+                    event(new RowImported($log));
+                }catch (\Exception|ValidationException $exception){
+                    /** @var ImportLog $log */
+                    $validation = $exception instanceof ValidationException
+                        ? $exception->errors()
+                        : [
+                            'errors' => [
+                                'server' => $exception->getMessage(),
+                                'original' => $exception->getTrace()
+                            ]
+                        ];
+
+                    $log = ImportLog::query()->create([
+                        'import_id' => $this->import->id,
+                        'row_number' => $rowNumber,
+                        'status' => 'error',
+                        'validation' => $validation
+                    ]);
+
+                    event(new RowImported($log));
+
+                    if(app()->environment('local')){
+                        throw $exception;
+                    }
+                }
             }
 
             $rowNumber++;
