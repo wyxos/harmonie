@@ -5,7 +5,13 @@ namespace Wyxos\Harmonie\Import;
 use Wyxos\Harmonie\Import\Models\Import;
 
 abstract class ImportBase {
-    protected $chunkSize = 100;
+    protected Import $import;
+
+    protected int $chunkSize = 100;
+
+    public function __construct(protected array $data = [])
+    {
+    }
 
     abstract public function rules(object $row);
 
@@ -19,8 +25,15 @@ abstract class ImportBase {
         return $this->chunkSize;
     }
 
-    public static function handle(Import $import): void
+    public static function handle(Import $import, $data = []): void
     {
-        ImportSetup::dispatch($import, new static);
+        ImportSetup::dispatch($import, new static($data = []));
+    }
+
+    public function setImport(Import $import): static
+    {
+        $this->import = $import;
+
+        return $this;
     }
 }

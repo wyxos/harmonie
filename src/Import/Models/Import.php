@@ -20,13 +20,11 @@ use Wyxos\Harmonie\Import\Events\ImportUpdated;
  */
 class Import extends Model
 {
-    use HasFactory;
-
     protected $guarded = ['id'];
 
     public function logs(): HasMany
     {
-        return $this->hasMany(ImportLog::class);
+        return $this->hasMany(config('import.models.log'));
     }
 
     public function successfulRows(): HasMany

@@ -5,18 +5,11 @@ namespace Wyxos\Harmonie\Listing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Http\Request;
+use Wyxos\Harmonie\Resource\FormRequest;
 
-abstract class ListingBase
+abstract class ListingBase extends FormRequest
 {
-    protected Request $request;
-
-    public function __construct(Request $request)
-    {
-        $this->request = $request;
-    }
-
-    abstract public function query();
+    abstract public function baseQuery();
 
     abstract public function filters(Builder|\Laravel\Scout\Builder $base);
 
@@ -25,11 +18,11 @@ abstract class ListingBase
         return 10;
     }
 
-    public function handle()
+    public function handle(): array
     {
-        $page = $this->request->offsetGet('page') ?: 1;
+        $page = $this->offsetGet('page') ?: 1;
 
-        $base = $this->query();
+        $base = $this->baseQuery();
 
         $this->filters($base);
 
@@ -38,7 +31,7 @@ abstract class ListingBase
 
         $this->load($pagination);
 
-        $items = collect($pagination->items())->map(fn($item) => $this->format($item));
+        $items = collect($pagination->items())->map(fn($item) => $this->append($item));
 
         $query = [
             'query' => [
@@ -46,7 +39,6 @@ abstract class ListingBase
                 'total' => $pagination->total(),
                 'perPage' => $this->perPage(),
                 'showing' => $pagination->count() + $pagination->perPage() * max(0, $pagination->currentPage() - 1)
-
             ]
         ];
 
@@ -56,7 +48,7 @@ abstract class ListingBase
         ];
     }
 
-    public function format($item)
+    public function append($item)
     {
         return $item;
     }
@@ -71,19 +63,11 @@ abstract class ListingBase
 
     }
 
-    public static function get()
-    {
-        /** @var ListingBase $instance */
-        $instance = app(static::class);
-
-        return $instance->handle();
-    }
-
     public function whereIn(Builder|HasMany|BelongsToMany|\Laravel\Scout\Builder $base, string $key, string $column = null): void
     {
         $column = $column ?: $key;
 
-        $value = $this->request->offsetGet($key);
+        $value = $this->offsetGet($key);
 
         if (!$value || !count($value)) {
             return;
@@ -96,7 +80,7 @@ abstract class ListingBase
     {
         $column = $column ?: $key;
 
-        $value = strtolower(trim($this->request->offsetGet($key)));
+        $value = strtolower(trim($this->offsetGet($key)));
 
         if (!$value) {
             return;
@@ -111,11 +95,11 @@ abstract class ListingBase
 
         $fromKey = preg_replace('/_at/', '_from', $column);
 
-        $from = $this->request->offsetGet($fromKey);
+        $from = $this->offsetGet($fromKey);
 
         $toKey = preg_replace('/_at/', '_to', $column);
 
-        $to = $this->request->offsetGet($toKey);
+        $to = $this->offsetGet($toKey);
 
         $base
             ->when($from, fn(Builder $query) => $query->where($column, '>=', $from))
@@ -126,7 +110,7 @@ abstract class ListingBase
     {
         $column = $column ?: $key;
 
-        $value = trim($this->request->offsetGet($key));
+        $value = trim($this->offsetGet($key));
 
         if (!$value) {
             return;

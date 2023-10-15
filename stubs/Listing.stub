@@ -7,8 +7,9 @@ use $use;
 
 class $className extends $baseClass
 {
-    public function query(): Builder
+    public function baseQuery(): Builder
     {
+        /** TODO: define the base query */
         // return \App\Models\User::query();
     }
 
@@ -20,7 +21,7 @@ class $className extends $baseClass
 //    /**
 //     * Enables formatting each instance returned by the pagination.
 //     */
-//    public function format($item)
+//    public function append($item)
 //    {
 //        return $item;
 //    }
