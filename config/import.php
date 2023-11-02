@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'load_migration' => false,
     'setup' => \Wyxos\Harmonie\Import\ImportSetup::class,
     'chunk' => \Wyxos\Harmonie\Import\ImportChunk::class,
     'models' => [

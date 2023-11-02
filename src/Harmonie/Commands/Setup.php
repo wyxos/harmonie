@@ -13,7 +13,12 @@ class Setup extends Command
 
     public function handle()
     {
-        $this->call('harmonie:exports-setup');
-        $this->call('harmonie:imports-setup');
+        if ($this->confirm('Do you want to set up Harmonie exports?', true)) {
+            $this->call('harmonie:setup-exports');
+        }
+
+        if ($this->confirm('Do you want to set up Harmonie imports?', true)) {
+            $this->call('harmonie:setup-imports');
+        }
     }
 }

@@ -14,7 +14,9 @@ class ImportServiceProvider extends ServiceProvider
             __DIR__ . '/../../config/import.php' => config_path('import.php'),
         ], 'harmonie:import-config');
 
-        $this->loadMigrationsFrom(__DIR__ . '/../../migrations/import');
+        if (config('import.load_migrations', false)) {
+            $this->loadMigrationsFrom(__DIR__ . '/../../migrations/import');
+        }
 
         if ($this->app->runningInConsole()) {
             $this->commands([
