@@ -14,7 +14,9 @@ class ExportServiceProvider extends ServiceProvider
             __DIR__ . '/../../config/export.php' => config_path('export.php'),
         ], 'harmonie:export-config');
 
-        $this->loadMigrationsFrom(__DIR__ . '/../../migrations/export');
+        if (config('export.load_migrations', false)) {
+            $this->loadMigrationsFrom(__DIR__ . '/../../migrations/export');
+        }
 
         if ($this->app->runningInConsole()) {
             $this->commands([

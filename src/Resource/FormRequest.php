@@ -29,17 +29,18 @@ class FormRequest extends LaravelFormRequest
     }
 
     /**
+     * @param mixed ...$routeParameters
      * @return mixed
      */
-    public function __invoke()
+    public function __invoke(...$routeParameters): mixed
     {
-        return app()->call([$this, 'handle']);
+        return app()->call([$this, 'handle'], $routeParameters);
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getPrimaryKey(): int
+    public function getPrimaryKey(): int|null
     {
         return $this->id;
     }
@@ -70,7 +71,7 @@ class FormRequest extends LaravelFormRequest
     /**
      * @throws Exception
      */
-    public function deleteByClass($class)
+    public function deleteByClass($class): void
     {
         if (!$this->queryByClass($class)->delete()) {
             throw new Exception("Failed to delete resource $class with primary key {$this->getPrimaryKey()}");
@@ -80,11 +81,26 @@ class FormRequest extends LaravelFormRequest
     /**
      * @throws Exception
      */
-    public function deleteModel(Model $model)
+    public function deleteModel(Model $model): void
     {
         if (!$model->delete()) {
             $class = class_basename($model);
             throw new Exception("Failed to delete model $class with primary key {$this->getPrimaryKey()}");
         }
+    }
+
+    protected function vision(): VisionData
+    {
+        return new VisionData();
+    }
+
+    protected function visionForm($form = [], $data = []): VisionData
+    {
+        return (new VisionData())->form($form)->data($data);
+    }
+
+    protected function visionListing($list = [], $data = []): VisionData
+    {
+        return (new VisionData())->list($list)->data($data);
     }
 }
