@@ -1,14 +1,14 @@
 {
-  "name": "laravel-resources",
+  "name": "harmonie",
   "version": "1.2.15",
-  "description": "Laravel Resources",
+  "description": "Backend utilities for Laravel and @wyxos/vision",
   "main": "release.js",
   "scripts": {
     "release": "node release.mjs"
   },
   "repository": {
     "type": "git",
-    "url": "git@wyxos.github.com:wyxos/laravel-resources.git"
+    "url": "git@wyxos.github.com:wyxos/harmonie.git"
   },
   "keywords": [],
   "author": "",

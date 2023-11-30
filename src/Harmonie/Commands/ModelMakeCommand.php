@@ -34,6 +34,12 @@ class ModelMakeCommand extends \Illuminate\Foundation\Console\ModelMakeCommand
             // Create App\Model.php
             $stubPath = __DIR__ . '/../../../stubs/model.base.stub';
             $content = File::get($stubPath);
+
+            // Replace the namespace placeholder with the application's root namespace
+// Replace the namespace placeholder with the application's root namespace
+            $namespace = rtrim($this->laravel->getNamespace(), '\\'); // Remove trailing backslashes
+            $content = str_replace('{{ namespace }}', $namespace, $content);
+
             File::put($appModelPath, $content);
             $this->info("App\Model.php has been created.");
         }
