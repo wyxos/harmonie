@@ -5,15 +5,17 @@ namespace Wyxos\Harmonie\Listing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Laravel\Scout\Builder as ScoutBuilder;
 use Wyxos\Harmonie\Resource\FormRequest;
 
 abstract class ListingBase extends FormRequest
 {
     abstract public function baseQuery();
 
-    abstract public function filters(Builder|\Laravel\Scout\Builder $base);
+    abstract public function filters(Builder|ScoutBuilder $base);
 
-    public function perPage()
+    public function perPage(): int
     {
         return 10;
     }
@@ -26,8 +28,12 @@ abstract class ListingBase extends FormRequest
 
         $this->filters($base);
 
-        /** @var LengthAwarePagination $pagination */
-        $pagination = $base->paginate($this->perPage(), ['*'], null, $page);
+        /** @var LengthAwarePaginator $pagination */
+        if ($base instanceof ScoutBuilder) {
+            $pagination = $base->paginate($this->perPage());
+        } else {
+            $pagination = $base->paginate($this->perPage(), ['*'], null, $page);
+        }
 
         $this->load($pagination);
 
@@ -63,7 +69,7 @@ abstract class ListingBase extends FormRequest
 
     }
 
-    public function whereIn(Builder|HasMany|BelongsToMany|\Laravel\Scout\Builder $base, string $key, string $column = null): void
+    public function whereIn(Builder|HasMany|BelongsToMany|ScoutBuilder $base, string $key, string $column = null): void
     {
         $column = $column ?: $key;
 
@@ -89,7 +95,7 @@ abstract class ListingBase extends FormRequest
         $base->whereRaw("LOWER($column) LIKE ?", ["%$value%"]);
     }
 
-    public function whereRange(Builder|HasMany|BelongsToMany|\Laravel\Scout\Builder $base, $key, $column = null): void
+    public function whereRange(Builder|HasMany|BelongsToMany|ScoutBuilder $base, $key, $column = null): void
     {
         $column = $column ?: $key;
 
@@ -102,11 +108,11 @@ abstract class ListingBase extends FormRequest
         $to = $this->offsetGet($toKey);
 
         $base
-            ->when($from, fn(Builder $query) => $query->where($column, '>=', $from))
-            ->when($to, fn(Builder $query) => $query->where($column, '<=', $to));
+            ->when($from, fn(Builder|HasMany|BelongsToMany|ScoutBuilder $query) => $query->where($column, '>=', $from))
+            ->when($to, fn(Builder|HasMany|BelongsToMany|ScoutBuilder $query) => $query->where($column, '<=', $to));
     }
 
-    public function where(Builder|HasMany|BelongsToMany|\Laravel\Scout\Builder $base, string $key, string $column = null): void
+    public function where(Builder|HasMany|BelongsToMany|ScoutBuilder $base, string $key, string $column = null): void
     {
         $column = $column ?: $key;
 

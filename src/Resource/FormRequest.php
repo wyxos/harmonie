@@ -12,60 +12,39 @@ use Illuminate\Foundation\Http\FormRequest as LaravelFormRequest;
  */
 class FormRequest extends LaravelFormRequest
 {
-    /**
-     * @return bool
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * @return array
-     */
     public function rules(): array
     {
         return [];
     }
 
-    /**
-     * @param mixed ...$routeParameters
-     * @return mixed
-     */
     public function __invoke(...$routeParameters): mixed
     {
         return app()->call([$this, 'handle'], $routeParameters);
     }
 
-    /**
-     * @return int|null
-     */
-    public function getPrimaryKey(): int|null
+    public function getPrimaryKey(): string|int|null
     {
-        return $this->id;
+        return $this->route($this->getPrimaryColumn()) | $this->id;
     }
 
-    public function getPrimaryColumns(): string
+    public function getPrimaryColumn(): string
     {
         return 'id';
     }
 
-    /**
-     * @param $class
-     * @return Builder
-     */
     public function queryByClass($class): Builder
     {
-        return $class::query()->where($this->getPrimaryColumns(), $this->getPrimaryKey());
+        return $class::query()->where($this->getPrimaryColumn(), $this->getPrimaryKey());
     }
 
-    /**
-     * @param $class
-     * @return Model
-     */
-    public function findByClass($class): Model
+    public function findByClass($class): Model|null
     {
-        return $class::query()->find($this->getPrimaryKey());
+        return $class::query()->findOrFail($this->getPrimaryKey());
     }
 
     /**
