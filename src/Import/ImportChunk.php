@@ -80,11 +80,6 @@ class ImportChunk implements ShouldQueue
 
             $this->instance->beforeValidation($row);
 
-            // Clean up the phone number
-            if (isset($row->phone)) {
-                $row->phone = trim(preg_replace('/[^0-9]/', '', $row->phone));
-            }
-
             $rowArray = (array) $row;
 
             $validator = Validator::make($rowArray, $this->instance->rules($row));

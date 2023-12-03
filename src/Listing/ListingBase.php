@@ -69,7 +69,9 @@ abstract class ListingBase extends FormRequest
 
     }
 
-    public function whereIn(Builder|HasMany|BelongsToMany|ScoutBuilder $base, string $key, string $column = null): void
+    public function whereIn(Builder|HasMany|BelongsToMany|ScoutBuilder $base, string $key, string $column = null,
+                            \Closure $formatter = null):
+    void
     {
         $column = $column ?: $key;
 
@@ -79,7 +81,7 @@ abstract class ListingBase extends FormRequest
             return;
         }
 
-        $base->whereIn($column, $value);
+        $base->whereIn($column, $formatter ? $formatter($value) : $value);
     }
 
     public function whereLike(Builder|HasMany|BelongsToMany $base, string $key, string $column = null): void
@@ -112,7 +114,9 @@ abstract class ListingBase extends FormRequest
             ->when($to, fn(Builder|HasMany|BelongsToMany|ScoutBuilder $query) => $query->where($column, '<=', $to));
     }
 
-    public function where(Builder|HasMany|BelongsToMany|ScoutBuilder $base, string $key, string $column = null): void
+    public function where(Builder|HasMany|BelongsToMany|ScoutBuilder $base, string $key, string $column = null,
+                          \Closure $formatter = null):
+    void
     {
         $column = $column ?: $key;
 
@@ -122,6 +126,6 @@ abstract class ListingBase extends FormRequest
             return;
         }
 
-        $base->where($column, $value);
+        $base->where($column, $formatter ? $formatter($value) : $value);
     }
 }
