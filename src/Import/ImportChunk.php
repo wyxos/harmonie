@@ -2,6 +2,7 @@
 
 namespace Wyxos\Harmonie\Import;
 
+use Exception;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -53,6 +54,15 @@ class ImportChunk implements ShouldQueue
      */
     public function handle()
     {
+        if ($this->batch()?->cancelled()) {
+            // Determine if the batch has been cancelled...
+            $this->import->update([
+                'status' => 'cancelled'
+            ]);
+
+            return;
+        }
+
         $this->import->updateAndBroadcast(['status' => 'processing']);
 
         // Read the file at the given path
@@ -71,8 +81,8 @@ class ImportChunk implements ShouldQueue
         // Loop through each record and process
         foreach ($csv->getRecords($headers) as $record) {
 
-            $row = (object) collect($record)
-                ->mapWithKeys(fn($value, $key) => [method_exists( $this->instance, 'columnMap') ?
+            $row = (object)collect($record)
+                ->mapWithKeys(fn($value, $key) => [method_exists($this->instance, 'columnMap') ?
                     $this->instance->columnMap()[$key] :
                     Str::snake($key) => $value ?: null]
                 )
@@ -80,7 +90,7 @@ class ImportChunk implements ShouldQueue
 
             $this->instance->beforeValidation($row);
 
-            $rowArray = (array) $row;
+            $rowArray = (array)$row;
 
             $validator = Validator::make($rowArray, $this->instance->rules($row));
 
@@ -107,7 +117,7 @@ class ImportChunk implements ShouldQueue
                     ]);
 
                     event(new RowImported($log));
-                }catch (\Exception|ValidationException $exception){
+                } catch (Exception|ValidationException $exception) {
                     /** @var ImportLog $log */
                     $validation = $exception instanceof ValidationException
                         ? $exception->errors()
@@ -127,7 +137,7 @@ class ImportChunk implements ShouldQueue
 
                     event(new RowImported($log));
 
-                    if(app()->environment('local')){
+                    if (app()->environment('local')) {
                         throw $exception;
                     }
                 }
