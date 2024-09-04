@@ -19,27 +19,11 @@ abstract class ExportBase
 {
     protected array $parameters;
 
-    public function keys($row): array
-    {
-        return array_keys($this->format($row));
-    }
-
-    abstract public function query(array $parameters = []): HasMany|BelongsToMany|Builder|EloquentBUilder;
-
-    abstract public function chunkQuery(): HasMany|BelongsToMany|Builder|EloquentBUilder;
-
-    abstract public function format($row);
-
-    abstract public function filename();
-
-    public function chunkSize(): int
-    {
-        return 100;
-    }
-
     public function __construct(array $parameters = [])
     {
         $this->parameters = $parameters;
+
+        $this->parameters['extension'] = $this->parameters['extension'] ?? 'csv';
     }
 
     /**
@@ -67,12 +51,13 @@ abstract class ExportBase
 
         $filename = $this->filename();
 
-        $path = '/exports/' . $filename;
+        $path = '/exports/' . $filename . '.' . $this->parameters['extension'];
 
         /** @var Export $export */
         $export = $model::query()->create([
             'path' => $path,
-            'status' => 'pending'
+            'status' => 'pending',
+            'parameters' => $this->parameters
         ]);
 
         if (!Storage::exists($export->path)) {
@@ -81,8 +66,26 @@ abstract class ExportBase
             Storage::put($export->path, '');
         }
 
-        CalculateChunks::dispatch($export, get_class($this), $this->parameters);
+        CalculateChunks::dispatch($export, get_class($this), $this->parameters)->onQueue(config('export.queue'));
 
         return $export;
+    }
+
+    abstract public function filename();
+
+    abstract public function query(array $parameters = []): HasMany|BelongsToMany|Builder|EloquentBUilder;
+
+    public function keys($row): array
+    {
+        return array_keys($this->format($row));
+    }
+
+    abstract public function format($row);
+
+    abstract public function chunkQuery(): HasMany|BelongsToMany|Builder|EloquentBUilder;
+
+    public function chunkSize(): int
+    {
+        return 100;
     }
 }

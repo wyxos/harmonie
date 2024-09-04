@@ -15,6 +15,8 @@ use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\UnavailableStream;
 use League\Csv\Writer;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Throwable;
 use Wyxos\Harmonie\Export\ExportBase;
 use Wyxos\Harmonie\Export\Models\Export;
@@ -44,6 +46,16 @@ class CalculateChunks implements ShouldQueue
      */
     public function handle(): void
     {
+        if ($this->batch()->cancelled()) {
+            // Determine if the batch has been cancelled...
+            $this->export->update([
+                'status' => 'cancelled'
+            ]);
+            
+            return;
+        }
+
+
         /** @var ExportBase $instance */
         $instance = new $this->instance($this->parameters);
 
@@ -73,13 +85,33 @@ class CalculateChunks implements ShouldQueue
 
         $export->broadcastUpdate();
 
-        $writer = Writer::createFromPath(Storage::path($export->path));
+        if ($this->export->isCsv()) {
+            $writer = Writer::createFromPath(Storage::path($export->path));
 
-        $firstRecord = $instance->chunkQuery()->find($ids[0]);
+            $firstRecord = $instance->chunkQuery()->find($ids[0]);
 
-        $header = $instance->keys($firstRecord);
+            $header = $instance->keys($firstRecord);
 
-        $writer->insertOne($header);
+            $writer->insertOne($header);
+        }
+
+        if ($this->export->isExcel()) {
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $firstRecord = $instance->chunkQuery()->find($ids[0]);
+
+            $header = $instance->keys($firstRecord);
+
+            $sheet->fromArray([$header], null, 'A1');
+
+            if (method_exists($instance, 'beforeSaveExcel')) {
+                $instance->beforeSaveExcel($sheet, $spreadsheet);
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $writer->save(Storage::path($export->path));
+        }
 
         $jobs = [];
 
@@ -97,7 +129,7 @@ class CalculateChunks implements ShouldQueue
                 'status' => 'complete'
             ]);
 
-            if(method_exists($export, 'onComplete')){
+            if (method_exists($export, 'onComplete')) {
                 $export->onComplete($parameters, $batch);
             }
 
