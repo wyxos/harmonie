@@ -46,16 +46,6 @@ class CalculateChunks implements ShouldQueue
      */
     public function handle(): void
     {
-        if ($this->batch()->cancelled()) {
-            // Determine if the batch has been cancelled...
-            $this->export->update([
-                'status' => 'cancelled'
-            ]);
-            
-            return;
-        }
-
-
         /** @var ExportBase $instance */
         $instance = new $this->instance($this->parameters);
 
