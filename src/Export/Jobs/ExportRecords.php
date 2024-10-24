@@ -53,7 +53,7 @@ class ExportRecords implements ShouldQueue
             return;
         }
 
-        $instance = new $this->instance;
+        $instance = new $this->instance($this->export->parameters);
 
         $this->export->update([
             'status' => 'processing'
