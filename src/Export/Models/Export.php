@@ -10,7 +10,7 @@ use Wyxos\Harmonie\Export\Events\ExportUpdate;
  * @property string path
  * @property int max
  * @property int value
- * @property object parameters
+ * @property array parameters
  */
 class Export extends Model
 {
@@ -18,6 +18,10 @@ class Export extends Model
 
     protected $guarded = [
         'id'
+    ];
+
+    protected $casts = [
+        'parameters' => 'array'
     ];
 
     public function broadcastUpdate(): static
@@ -31,11 +35,11 @@ class Export extends Model
 
     public function isCsv(): bool
     {
-        return $this->parameters->extension === 'csv';
+        return $this->parameters['extension'] === 'csv';
     }
 
     public function isExcel(): bool
     {
-        return $this->parameters->extension === 'xlsx';
+        return $this->parameters['extension'] === 'xlsx';
     }
 }
