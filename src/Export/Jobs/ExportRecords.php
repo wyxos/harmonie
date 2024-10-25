@@ -76,6 +76,12 @@ class ExportRecords implements ShouldQueue
         if ($this->export->isExcel()) {
             // Reload the existing Excel located at Storage::path($this->export->path)
             $spreadsheet = IOFactory::load(Storage::path($this->export->path));
+
+            if ($spreadsheet->getSheetCount() === 0) {
+                $spreadsheet->createSheet();
+                $spreadsheet->setActiveSheetIndex(0);
+            }
+
             $sheet = $spreadsheet->getActiveSheet(); // Optionally, you can select a specific sheet
 
             // Get the highest row number that has data
