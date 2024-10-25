@@ -50,8 +50,10 @@ abstract class ExportBase
         $model = config('export.model');
 
         $filename = $this->filename();
+        
+        $extension = $this->parameters['extension'];  // Capture the extension
 
-        $path = '/exports/' . $filename . '.' . $this->parameters['extension'];
+        $path = '/exports/' . $filename . '.' . $extension;
 
         /** @var Export $export */
         $export = $model::query()->create([
@@ -60,11 +62,22 @@ abstract class ExportBase
             'parameters' => $this->parameters
         ]);
 
-        if (!Storage::exists($export->path)) {
-            File::ensureDirectoryExists(Storage::path('/exports/'));
+        // Ensure directory exists
+        File::ensureDirectoryExists(Storage::path('/exports/'));
 
+        // Check the extension type
+        if ($extension === 'xlsx') {
+            // Create a new Excel file with an empty sheet
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $spreadsheet->getActiveSheet()->setTitle('Sheet1');  // Name your sheet
+
+            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+            $writer->save(Storage::path($export->path));
+        } else {
+            // For CSV or other formats, create an empty file
             Storage::put($export->path, '');
         }
+
 
         CalculateChunks::dispatch($export, get_class($this), $this->parameters)->onQueue(config('export.queue'));
 
