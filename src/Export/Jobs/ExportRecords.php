@@ -14,6 +14,7 @@ use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\UnavailableStream;
 use League\Csv\Writer;
+use Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Wyxos\Harmonie\Export\Models\Export;
 
