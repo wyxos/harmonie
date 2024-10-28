@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Storage;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\UnavailableStream;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Throwable;
 use Wyxos\Harmonie\Export\Jobs\CalculateChunks;
 use Wyxos\Harmonie\Export\Models\Export;
@@ -50,7 +52,7 @@ abstract class ExportBase
         $model = config('export.model');
 
         $filename = $this->filename();
-        
+
         $extension = $this->parameters['extension'];  // Capture the extension
 
         $path = '/exports/' . $filename . '.' . $extension;
@@ -66,16 +68,16 @@ abstract class ExportBase
         File::ensureDirectoryExists(Storage::path('/exports/'));
 
         // Check the extension type
-        if ($extension === 'xlsx') {
-            // Create a new Excel file with an empty sheet
-            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-            $spreadsheet->getActiveSheet()->setTitle('Sheet1');  // Name your sheet
-
-            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
-            $writer->save(Storage::path($export->path));
-        } else {
+        if ($extension === 'csv') {
             // For CSV or other formats, create an empty file
             Storage::put($export->path, '');
+        } else {
+            // Create a new Excel file with an empty sheet
+            $spreadsheet = new Spreadsheet();
+            $spreadsheet->getActiveSheet()->setTitle('Sheet1');  // Name your sheet
+
+            $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+            $writer->save(Storage::path($export->path));
         }
 
 
