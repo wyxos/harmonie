@@ -148,7 +148,6 @@ class CalculateChunks implements ShouldQueue
                 // All jobs completed successfully...
                 $export->update([
                     'status' => 'complete',
-                    'expires_at' => Carbon::now()->addDays(2)
                 ]);
 
                 if (method_exists($export, 'onComplete')) {
