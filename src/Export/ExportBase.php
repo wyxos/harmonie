@@ -6,87 +6,30 @@ use Illuminate\Database\Eloquent\Builder as EloquentBUilder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\UnavailableStream;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Throwable;
-use Wyxos\Harmonie\Export\Jobs\CalculateChunks;
 use Wyxos\Harmonie\Export\Models\Export;
 
 abstract class ExportBase
 {
-    protected array $parameters;
-
-    public function __construct(array $parameters = [])
+    public function __construct(protected Export|null $export = null)
     {
-        $this->parameters = $parameters;
-
-        $this->parameters['extension'] = $this->parameters['extension'] ?? 'csv';
     }
 
     /**
      * @throws UnavailableStream
-     * @throws Throwable
      * @throws CannotInsertRecord
+     * @throws Throwable
      * @throws Exception
      */
-    public static function create(array $parameters = []): Export
+    public function store($parameters): Export
     {
-        $instance = new static($parameters);
-
-        return $instance->handle();
+        return ExportStore::create($parameters, $this->filename($parameters), get_class($this));
     }
 
-    /**
-     * @throws UnavailableStream
-     * @throws Throwable
-     * @throws CannotInsertRecord
-     * @throws Exception
-     */
-    public function handle(): Export
-    {
-        $model = config('export.model');
-
-        $filename = $this->filename();
-
-        $extension = $this->parameters['extension'];  // Capture the extension
-
-        $path = '/exports/' . $filename . '.' . $extension;
-
-        /** @var Export $export */
-        $export = $model::query()->create([
-            'path' => $path,
-            'status' => 'pending',
-            'parameters' => $this->parameters
-        ]);
-
-        // Ensure directory exists
-        File::ensureDirectoryExists(Storage::path('/exports/'));
-
-        // Check the extension type
-        if ($extension === 'csv') {
-            // For CSV or other formats, create an empty file
-            Storage::put($export->path, '');
-        } else {
-            // Create a new Excel file with an empty sheet
-            $spreadsheet = new Spreadsheet();
-            $spreadsheet->getActiveSheet()->setTitle('Sheet1');  // Name your sheet
-
-            $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-            $writer->save(Storage::path($export->path));
-        }
-
-
-        CalculateChunks::dispatch($export, get_class($this), $this->parameters)->onQueue(config('export.queue'));
-
-        return $export;
-    }
-
-    abstract public function filename();
+    abstract public function filename($parameters = []);
 
     abstract public function query(array $parameters = []): HasMany|BelongsToMany|Builder|EloquentBUilder;
 

@@ -1,34 +1,35 @@
 {
-    "name": "wyxos/harmonie",
-    "description": "Backend utilities for Laravel and @wyxos/vision",
-    "type": "library",
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Wyxos\\Harmonie\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Wyxos",
-            "email": "github@wyxos.com"
-        }
-    ],
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Wyxos\\Harmonie\\Resource\\ResourceServiceProvider",
-                "Wyxos\\Harmonie\\Listing\\ListingServiceProvider",
-                "Wyxos\\Harmonie\\Export\\ExportServiceProvider",
-                "Wyxos\\Harmonie\\Import\\ImportServiceProvider",
-                "Wyxos\\Harmonie\\Harmonie\\HarmonieServiceProvider"
-            ]
-        }
-    },
-    "require": {
-        "php": ">=8.1",
-        "laravel/framework": "^9.0 || ^10.0",
-        "league/csv": "^9.0",
-        "laravel/scout": "^10.6"
+  "name": "wyxos/harmonie",
+  "description": "Backend utilities for Laravel and @wyxos/vision",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Wyxos\\Harmonie\\": "src/"
     }
+  },
+  "authors": [
+    {
+      "name": "Wyxos",
+      "email": "github@wyxos.com"
+    }
+  ],
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Wyxos\\Harmonie\\Resource\\ResourceServiceProvider",
+        "Wyxos\\Harmonie\\Listing\\ListingServiceProvider",
+        "Wyxos\\Harmonie\\Export\\ExportServiceProvider",
+        "Wyxos\\Harmonie\\Import\\ImportServiceProvider",
+        "Wyxos\\Harmonie\\Harmonie\\HarmonieServiceProvider"
+      ]
+    }
+  },
+  "require": {
+    "php": ">=8.1",
+    "laravel/framework": "^9.0 || ^10.0",
+    "league/csv": "^9.0",
+    "laravel/scout": "^10.6",
+    "phpoffice/phpspreadsheet": "^2.2"
+  }
 }

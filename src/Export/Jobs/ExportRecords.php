@@ -9,30 +9,25 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\UnavailableStream;
 use League\Csv\Writer;
-use Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\Exception as ReaderException;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use Wyxos\Harmonie\Export\ExportBase;
 use Wyxos\Harmonie\Export\Models\Export;
 
 class ExportRecords implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected Export $export;
-
-    protected string $instance;
-
-    protected array $ids;
-
-    public function __construct(array $ids, Export $export, string $instance)
+    public function __construct(protected array $ids, protected Export $export, protected string $base, protected int $jobIndex)
     {
-        $this->ids = $ids;
-        $this->export = $export;
-        $this->instance = $instance;
+
     }
 
     /**
@@ -54,52 +49,75 @@ class ExportRecords implements ShouldQueue
             return;
         }
 
-        $instance = new $this->instance($this->export->parameters);
+        /** @var ExportBase $exportBase */
+        $exportBase = new $this->base($this->export);
 
         $this->export->update([
             'status' => 'processing'
         ]);
 
-        $rows = $instance->chunkQuery()
+        $rows = $exportBase->chunkQuery()
             ->whereIn('id', $this->ids)
+            ->when(method_exists($exportBase, 'chunkWith'), fn($query) => $query->with($exportBase->chunkWith()))
             ->get();
 
-        /* TODO writer logic for csv file */
         if ($this->export->isCsv()) {
             $writer = Writer::createFromPath(Storage::path($this->export->path), 'a+');
 
             foreach ($rows as $row) {
-                $writer->insertOne($instance->format($row));
+                $writer->insertOne($exportBase->format($row));
             }
         }
 
         if ($this->export->isExcel()) {
-            // Reload the existing Excel located at Storage::path($this->export->path)
-            $spreadsheet = IOFactory::load(Storage::path($this->export->path));
+            $path = Storage::path($this->export->path);
 
-            if ($spreadsheet->getSheetCount() === 0) {
-                $spreadsheet->createSheet();
-                $spreadsheet->setActiveSheetIndex(0);
+            // Check if the file exists and load or create a new spreadsheet accordingly
+            if (file_exists($path)) {
+                try {
+                    // Load the existing spreadsheet from the file path
+                    $spreadsheet = IOFactory::load($path);
+                } catch (ReaderException $e) {
+                    throw new \Exception("Failed to load the existing Excel file: " . $e->getMessage());
+                }
+            } else {
+                throw new \Exception("Excel file does not exist at the specified path: " . $path);
             }
 
-            $sheet = $spreadsheet->getActiveSheet(); // Optionally, you can select a specific sheet
+            // Ensure there is at least one sheet before proceeding
+            if ($spreadsheet->getSheetCount() === 0) {
+                throw new \Exception("The loaded Excel file contains no sheets.");
+            }
 
-            // Get the highest row number that has data
-            $highestRow = $sheet->getHighestRow();
+            // Retrieve the first sheet (assuming data is always written to the first sheet)
+            $sheet = $spreadsheet->getActiveSheet();
+
+//            $highestRow = $sheet->getHighestRow();
+
+            $highestRow = ($this->jobIndex * $exportBase->chunkSize()) + 1;
 
             // Iterate over each row and call the formatExcel method
             foreach ($rows as $row) {
                 // Increment the row number before writing new data
                 $highestRow++;
 
-                // Pass the updated row number to the formatExcel method
-                $instance->formatExcel(row: $row, sheet: $sheet, index: $highestRow);
+                try {
+                    // Pass the updated row number to the formatExcel method
+                    $exportBase->formatExcel(row: $row, sheet: $sheet, index: $highestRow);
+                } catch (\Exception $exception) {
+                    throw $exception;
+                }
             }
 
             // Save the updated Excel file back to the same path
             $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-            $writer->save(Storage::path($this->export->path));
+            $writer->save($path);
+
+            $spreadsheet->disconnectWorksheets();
+
+            unset($writer, $spreadsheet);
         }
+
 
         $this->export->update([
             'value' => DB::raw('value + ' . count($this->ids))
