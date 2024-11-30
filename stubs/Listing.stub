@@ -29,7 +29,7 @@ class $className extends $baseClass
 //    /**
 //     * Merge data with the final response.
 //     */
-//    public function data(): array
+//    public function customData(): array
 //    {
 //        return [];
 //    }
