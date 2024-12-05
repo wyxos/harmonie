@@ -21,7 +21,7 @@ abstract class ListingBase extends FormRequest
         $this->filters($base);
 
         /** @var LengthAwarePaginator $pagination */
-        $perPage = $this->perPage() || $this->offsetGet('perPage');
+        $perPage = $this->perPage() ?? $this->offsetGet('perPage');
 
         if ($base instanceof ScoutBuilder) {
             $pagination = $base->paginate($perPage);
