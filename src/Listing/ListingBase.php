@@ -2,6 +2,7 @@
 
 namespace Wyxos\Harmonie\Listing;
 
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,15 +12,6 @@ use Wyxos\Harmonie\Resource\FormRequest;
 
 abstract class ListingBase extends FormRequest
 {
-    abstract public function baseQuery();
-
-    abstract public function filters(Builder|ScoutBuilder $base);
-
-    public function perPage(): int
-    {
-        return 10;
-    }
-
     public function handle(): array
     {
         $page = $this->offsetGet('page') ?: 1;
@@ -29,10 +21,12 @@ abstract class ListingBase extends FormRequest
         $this->filters($base);
 
         /** @var LengthAwarePaginator $pagination */
+        $perPage = $this->perPage() || $this->offsetGet('perPage');
+
         if ($base instanceof ScoutBuilder) {
-            $pagination = $base->paginate($this->perPage());
+            $pagination = $base->paginate($perPage);
         } else {
-            $pagination = $base->paginate($this->perPage(), ['*'], null, $page);
+            $pagination = $base->paginate($perPage, ['*'], null, $page);
         }
 
         $this->load($pagination);
@@ -40,10 +34,10 @@ abstract class ListingBase extends FormRequest
         $items = collect($pagination->items())->map(fn($item) => $this->append($item));
 
         $query = [
-            'query' => [
+            'listing' => [
                 'items' => $items,
                 'total' => $pagination->total(),
-                'perPage' => $this->perPage(),
+                'perPage' => $perPage,
                 'showing' => $pagination->count() + $pagination->perPage() * max(0, $pagination->currentPage() - 1)
             ]
         ];
@@ -52,6 +46,20 @@ abstract class ListingBase extends FormRequest
             ...$query,
             ...$this->data($items)
         ];
+    }
+
+    abstract public function baseQuery();
+
+    abstract public function filters(Builder|ScoutBuilder $base);
+
+    public function perPage(): int
+    {
+        return 10;
+    }
+
+    public function load($base)
+    {
+
     }
 
     public function append($item)
@@ -64,13 +72,8 @@ abstract class ListingBase extends FormRequest
         return [];
     }
 
-    public function load($base)
-    {
-
-    }
-
     public function whereIn(Builder|HasMany|BelongsToMany|ScoutBuilder $base, string $key, string $column = null,
-                            \Closure $formatter = null):
+                            Closure                                    $formatter = null):
     void
     {
         $column = $column ?: $key;
@@ -115,7 +118,7 @@ abstract class ListingBase extends FormRequest
     }
 
     public function where(Builder|HasMany|BelongsToMany|ScoutBuilder $base, string $key, string $column = null,
-                          \Closure $formatter = null):
+                          Closure                                    $formatter = null):
     void
     {
         $column = $column ?: $key;
