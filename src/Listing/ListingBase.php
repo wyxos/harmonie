@@ -44,7 +44,7 @@ abstract class ListingBase extends FormRequest
 
         return [
             ...$query,
-            ...$this->data($items)
+            ...$this->customData($items)
         ];
     }
 
@@ -67,7 +67,7 @@ abstract class ListingBase extends FormRequest
         return $item;
     }
 
-    public function data($items): array
+    public function customData($items): array
     {
         return [];
     }
