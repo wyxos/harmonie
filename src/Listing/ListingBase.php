@@ -33,7 +33,7 @@ abstract class ListingBase extends FormRequest
 
         $items = collect($pagination->items())->map(fn($item) => $this->append($item));
 
-        $query = [
+        $listing = [
             'listing' => [
                 'items' => $items,
                 'total' => $pagination->total(),
@@ -42,9 +42,12 @@ abstract class ListingBase extends FormRequest
             ]
         ];
 
+        $filter = $this->formatFilters($this->all());
+
         return [
-            ...$query,
-            ...$this->customData($items)
+            ...$listing,
+            ...$this->customData($items),
+            'filters' => $filter
         ];
     }
 
@@ -65,6 +68,11 @@ abstract class ListingBase extends FormRequest
     public function append($item)
     {
         return $item;
+    }
+
+    public function formatFilters($attributes): array
+    {
+        return $attributes;
     }
 
     public function customData($items): array
