@@ -72,7 +72,45 @@ abstract class ListingBase extends FormRequest
 
     public function formatFilters($attributes): array
     {
-        return $attributes;
+        $formattedFilters = [];
+
+        foreach ($attributes as $key => $rawValue) {
+            // Skip if the label for the key does not exist
+            if (!array_key_exists($key, $this->filterLabels())) {
+                continue;
+            }
+
+            // Determine the mapped value (if it exists)
+            $value = null;
+            if (array_key_exists($key, $this->filterValues())) {
+                $mappedValue = $this->filterValues()[$key];
+                $value = is_callable($mappedValue) ? $mappedValue($rawValue) : $mappedValue[$rawValue] ?? $rawValue;
+            }
+
+            if ($rawValue == '' || $rawValue == 'all') {
+                continue;
+            }
+
+            // Build the filter object
+            $formattedFilters[] = [
+                'key' => $key,
+                'label' => $this->filterLabels()[$key],
+                'rawValue' => $rawValue,
+                'value' => $value ?? $rawValue,
+            ];
+        }
+
+        return $formattedFilters;
+    }
+
+    public function filterLabels(): array
+    {
+        return [];
+    }
+
+    public function filterValues(): array
+    {
+        return [];
     }
 
     public function customData($items): array
