@@ -84,7 +84,22 @@ abstract class ListingBase extends FormRequest
             $value = null;
             if (array_key_exists($key, $this->filterValues())) {
                 $mappedValue = $this->filterValues()[$key];
-                $value = is_callable($mappedValue) ? $mappedValue($rawValue) : $mappedValue[$rawValue] ?? $rawValue;
+
+                $value = null;
+
+                if (is_callable($mappedValue)) {
+                    $value = $mappedValue($rawValue);
+                }
+
+                if (is_array($mappedValue) && (is_numeric($rawValue) || is_string($rawValue))) {
+                    $value = $mappedValue[$rawValue] ?? $rawValue;
+                }
+
+                if (is_array($rawValue)) {
+                    $value = array_map(function ($item) use ($mappedValue) {
+                        return $mappedValue[$item] ?? $item;
+                    }, $rawValue);
+                }
             }
 
             if ($rawValue == '' || $rawValue == 'all') {
