@@ -38,7 +38,7 @@ abstract class ListingBase extends FormRequest
                 'items' => $items,
                 'total' => $pagination->total(),
                 'perPage' => $perPage,
-                'showing' => $pagination->count() + $pagination->perPage() * max(0, $pagination->currentPage() - 1)
+                'showing' => $pagination->count() + (int)$perPage * max(0, $pagination->currentPage() - 1)
             ]
         ];
 
