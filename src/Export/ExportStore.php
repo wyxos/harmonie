@@ -61,7 +61,8 @@ class ExportStore
         File::ensureDirectoryExists(Storage::path('/exports/'));
 
         // $this will be the Export class instance extending ExportBase
-        CalculateChunks::dispatch($export, $this->base)->onQueue(config('export.queue'));
+        $calculateClass = config('export.calculate');
+        $calculateClass::dispatch($export, $this->base)->onQueue(config('export.queue'));
 
         return $export;
     }
