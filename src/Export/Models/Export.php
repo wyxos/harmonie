@@ -28,7 +28,11 @@ class Export extends Model
     {
         $this->refresh();
 
-        event(new ExportUpdate($this));
+        $eventClass = config('export.event', ExportUpdate::class);
+
+        $eventClass::broadcast($this);
+
+//        event(new $eventClass($this));
 
         return $this;
     }
