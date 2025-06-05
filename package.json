@@ -1,6 +1,6 @@
 {
   "name": "harmonie",
-  "version": "1.5.13",
+  "version": "1.5.14",
   "description": "Backend utilities for Laravel and @wyxos/vision",
   "main": "release.js",
   "scripts": {
