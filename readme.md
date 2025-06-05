@@ -1,30 +1,142 @@
-# Wyxos Harmonie
+# Harmonie
 
-Wyxos Harmonie is a PHP library designed to streamline backend development for Laravel applications. This library 
-can function alongside the Node.js plugin [@wyxos/vision](https://github.com/wyxos/vision) to deliver an enhanced development experience, but it is 
-also fully capable of operating independently.
+Backend utilities for Laravel and @wyxos/vision.
+
+## Description
+
+Harmonie is a comprehensive package that provides a set of utilities to streamline backend development in Laravel applications, especially when working with the @wyxos/vision frontend library. It offers tools for handling data listings, imports, exports, and resource management.
+
+## Requirements
+
+- PHP 8.1 or higher
+- Laravel 11.31+ or 12.0+
+- league/csv 9.0+
+- laravel/scout 10.6+
+- phpoffice/phpspreadsheet 2.2+
 
 ## Installation
 
-To add Wyxos Harmonie to your project, simply run:
+You can install the package via composer:
 
-```shell
+```bash
 composer require wyxos/harmonie
 ```
 
-## Usage
+The package will automatically register its service providers.
 
-Wyxos Harmonie is designed to be intuitive and easy to use. Detailed usage instructions and examples will be provided in the documentation (coming soon).
+## Configuration
 
-While this library is designed to work in conjunction with the @wyxos/vision Node.js plugin, they can also be used independently depending on the requirements of your project.
+Publish the configuration file:
 
-To use the export capabilities, the job_batch table needs to exist. You can either manually generate the migration 
-by running `php artisan queue:batch-table` or `php artisan harmonie:setup`.
+```bash
+php artisan vendor:publish --tag=harmonie:harmonie-config
+```
 
-## Support and Contributions
+## Features
 
-If you encounter any issues or have any questions about Wyxos Harmonie, feel free to submit an issue on the project's GitHub page. Contributions to the project are also welcome!
+### Listing
+
+The Listing component provides a powerful way to handle data listings with filtering, pagination, and formatting. It supports both Eloquent and Scout (search) queries.
+
+Example usage:
+
+```php
+use Wyxos\Harmonie\Listing\ListingBase;
+use Illuminate\Database\Eloquent\Builder;
+use Laravel\Scout\Builder as ScoutBuilder;
+
+class UserListing extends ListingBase
+{
+    public function baseQuery()
+    {
+        return User::query();
+    }
+
+    public function filters(Builder|ScoutBuilder $base)
+    {
+        $this->whereLike($base, 'search', 'name');
+        $this->whereIn($base, 'roles');
+        $this->whereRange($base, 'created_at');
+    }
+
+    public function filterLabels(): array
+    {
+        return [
+            'search' => 'Search',
+            'roles' => 'Roles',
+            'created_from' => 'Created From',
+            'created_to' => 'Created To',
+        ];
+    }
+
+    public function load($pagination)
+    {
+        $pagination->load('roles');
+    }
+}
+```
+
+### Export
+
+The Export component allows you to export data to CSV files with support for chunking large datasets.
+
+Example usage:
+
+```php
+use Wyxos\Harmonie\Export\ExportBase;
+use Illuminate\Database\Eloquent\Builder;
+
+class UserExport extends ExportBase
+{
+    public function filename($parameters = [])
+    {
+        return 'users-export-' . now()->format('Y-m-d');
+    }
+
+    public function query(array $parameters = []): Builder
+    {
+        return User::query();
+    }
+
+    public function format($row)
+    {
+        return [
+            'ID' => $row->id,
+            'Name' => $row->name,
+            'Email' => $row->email,
+            'Created At' => $row->created_at->format('Y-m-d H:i:s'),
+        ];
+    }
+
+    public function chunkQuery(): Builder
+    {
+        return $this->query();
+    }
+}
+```
+
+### Import
+
+The Import component provides functionality for importing data from CSV files with support for validation and error handling.
+
+### Resource
+
+The Resource component extends Laravel's resource functionality with additional features for API development.
+
+### Commands
+
+Harmonie includes several useful Artisan commands:
+
+- `php artisan harmonie:clear-all-cache` - Clears various cache types
+- `php artisan harmonie:flush-redis` - Clears Redis cache
+- `php artisan harmonie:generate-administrator` - Creates an admin user
+- `php artisan harmonie:scout-reset` - Resets Laravel Scout indexes
+- `php artisan harmonie:make-model` - Custom model generator
 
 ## License
 
-Harmonie is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+## Credits
+
+- [Wyxos](https://github.com/wyxos)
