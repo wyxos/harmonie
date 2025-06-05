@@ -26,7 +26,8 @@ abstract class ExportBase
      */
     public function store($parameters): Export
     {
-        return ExportStore::create($parameters, $this->filename($parameters), get_class($this));
+        $storeClass = config('export.store', ExportStore::class);
+        return $storeClass::create($parameters, $this->filename($parameters), get_class($this));
     }
 
     abstract public function filename($parameters = []);
