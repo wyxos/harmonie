@@ -68,12 +68,8 @@ class CalculateChunks implements ShouldQueue
 
             $chunkSize = $exportBase->chunkSize();
 
-            $ids = $builder->pluck('id')->all();
-
-            $chunks = array_chunk($ids, $chunkSize);
-
             $export->update([
-                'max' => count($ids)
+                'max' => (clone $builder)->count()
             ]);
 
             $export->broadcastUpdate();
@@ -86,7 +82,7 @@ class CalculateChunks implements ShouldQueue
                 // Use the correct path for the League\Csv\Writer
                 $writer = Writer::createFromPath(Storage::path($relativePath), 'a+');
 
-                $firstRecord = $exportBase->chunkQuery()->find($ids[0]);
+                $firstRecord = (clone $builder)->first();
 
                 $header = $exportBase->keys($firstRecord);
 
@@ -104,7 +100,7 @@ class CalculateChunks implements ShouldQueue
                 $sheet = $spreadsheet->getActiveSheet();
 
                 // Fetch the first record to extract the header keys
-                $firstRecord = $exportBase->chunkQuery()->find($ids[0]);
+                $firstRecord = (clone $builder)->first();
 
                 // Get the headers from the first record using the keys method
                 $header = $exportBase->keys($firstRecord);
@@ -131,16 +127,29 @@ class CalculateChunks implements ShouldQueue
 
             $job = config('export.job');
 
-            foreach ($chunks as $index => $chunkIds) {
+//            foreach ($chunks as $index => $chunkIds) {
+//                /** @var ExportRecords $exportRecords */
+//                $exportRecords = new $job($chunkIds, $export, get_class($exportBase), $index);
+//
+//                if (method_exists($exportBase, 'chunkDelay')) {
+//                    $exportRecords->delay($exportBase->chunkDelay($index));
+//                }
+//
+//                $jobs[] = $exportRecords;
+//            }
+
+            $builder->chunkById($chunkSize, function ($chunk) use (&$jobs, $job, $exportBase) {
+                $chunkIds = $chunk->pluck('id')->all();
+
                 /** @var ExportRecords $exportRecords */
-                $exportRecords = new $job($chunkIds, $export, get_class($exportBase), $index);
+                $exportRecords = new $job($chunkIds, $this->export, get_class($exportBase), count($jobs));
 
                 if (method_exists($exportBase, 'chunkDelay')) {
-                    $exportRecords->delay($exportBase->chunkDelay($index));
+                    $exportRecords->delay($exportBase->chunkDelay(count($jobs)));
                 }
 
                 $jobs[] = $exportRecords;
-            }
+            });
 
             $parameters = $this->parameters;
 
