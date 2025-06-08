@@ -132,6 +132,8 @@ Harmonie includes several useful Artisan commands:
 - `php artisan harmonie:generate-administrator` - Creates an admin user
 - `php artisan harmonie:scout-reset` - Resets Laravel Scout indexes
 - `php artisan harmonie:make-model` - Custom model generator
+- `php artisan harmonie:install-git-hook` - Installs a git pre-push hook that runs tests
+- `php artisan harmonie:uninstall-git-hook` - Uninstalls the git pre-push hook
 
 ## License
 

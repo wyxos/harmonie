@@ -6,8 +6,10 @@ use Illuminate\Support\ServiceProvider;
 use Wyxos\Harmonie\Harmonie\Commands\ClearAllCache;
 use Wyxos\Harmonie\Harmonie\Commands\FlushRedis;
 use Wyxos\Harmonie\Harmonie\Commands\GenerateAdministrator;
+use Wyxos\Harmonie\Harmonie\Commands\InstallGitHook;
 use Wyxos\Harmonie\Harmonie\Commands\ModelMakeCommand;
 use Wyxos\Harmonie\Harmonie\Commands\ScoutReset;
+use Wyxos\Harmonie\Harmonie\Commands\UninstallGitHook;
 
 class HarmonieServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,8 @@ class HarmonieServiceProvider extends ServiceProvider
                 GenerateAdministrator::class,
                 ScoutReset::class,
                 ModelMakeCommand::class,
+                InstallGitHook::class,
+                UninstallGitHook::class,
             ]);
         }
     }
