@@ -9,6 +9,7 @@ use Wyxos\Harmonie\Harmonie\Commands\GenerateAdministrator;
 use Wyxos\Harmonie\Harmonie\Commands\InstallGitHook;
 use Wyxos\Harmonie\Harmonie\Commands\ModelMakeCommand;
 use Wyxos\Harmonie\Harmonie\Commands\ScoutReset;
+use Wyxos\Harmonie\Harmonie\Commands\Setup;
 use Wyxos\Harmonie\Harmonie\Commands\UninstallGitHook;
 
 class HarmonieServiceProvider extends ServiceProvider
@@ -28,6 +29,7 @@ class HarmonieServiceProvider extends ServiceProvider
                 ModelMakeCommand::class,
                 InstallGitHook::class,
                 UninstallGitHook::class,
+                Setup::class,
             ]);
         }
     }
@@ -37,5 +39,14 @@ class HarmonieServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(
             __DIR__ . '/../../config/harmonie.php', 'harmonie'
         );
+
+        // Conditionally register ImportServiceProvider and ExportServiceProvider
+        if (config('harmonie.features.import', false)) {
+            $this->app->register(\Wyxos\Harmonie\Import\ImportServiceProvider::class);
+        }
+
+        if (config('harmonie.features.export', false)) {
+            $this->app->register(\Wyxos\Harmonie\Export\ExportServiceProvider::class);
+        }
     }
 }
