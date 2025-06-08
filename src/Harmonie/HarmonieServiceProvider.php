@@ -3,6 +3,7 @@
 namespace Wyxos\Harmonie\Harmonie;
 
 use Illuminate\Support\ServiceProvider;
+use Wyxos\Harmonie\Harmonie\Commands\AppClear;
 use Wyxos\Harmonie\Harmonie\Commands\ClearAllCache;
 use Wyxos\Harmonie\Harmonie\Commands\FlushRedis;
 use Wyxos\Harmonie\Harmonie\Commands\GenerateAdministrator;
@@ -30,6 +31,7 @@ class HarmonieServiceProvider extends ServiceProvider
                 InstallGitHook::class,
                 UninstallGitHook::class,
                 Setup::class,
+                AppClear::class,
             ]);
         }
     }
