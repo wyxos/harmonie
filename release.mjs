@@ -1,54 +1,69 @@
-// script.mjs
-import fs from 'fs';
-import prompts from 'prompts';
+#!/usr/bin/env node
+
+import fs from 'fs-extra';
+import path from 'path';
+import semver from 'semver';
+import inquirer from 'inquirer';
 import simpleGit from 'simple-git';
 
+const PACKAGE_DIR = path.resolve('.');
+const COMPOSER_PATH = path.join(PACKAGE_DIR, 'composer.json');
+const UI_PATH = path.join(PACKAGE_DIR, './ui');
 const git = simpleGit();
 
-function incrementVersion(version) {
-    const versions = version.split('.').map(Number);
-    versions[2] += 1; // Increment PATCH version
-    return versions.join('.');
+async function getCurrentVersion() {
+    const composer = await fs.readJson(COMPOSER_PATH);
+    return composer.version || '0.0.0';
 }
 
+function calculateNextPatch(version) {
+    return semver.inc(version, 'patch');
+}
 
-(async function() {
-    const currentVersion = JSON.parse(fs.readFileSync('./package.json')).version;
-    const incrementedVersion = incrementVersion(currentVersion);
+async function updateVersionInComposer(version) {
+    const composer = await fs.readJson(COMPOSER_PATH);
+    composer.version = version;
+    await fs.writeJson(COMPOSER_PATH, composer, { spaces: 2 });
+}
 
-    const response = await prompts({
-        type: 'text',
-        name: 'version',
-        message: 'Enter the version to publish',
-        initial: incrementedVersion
-    });
-
-    const version = response.version;
-
-    const packageJson = JSON.parse(fs.readFileSync('package.json'));
-    packageJson.version = version;
-    fs.writeFileSync('./package.json', JSON.stringify(packageJson, null, 2));
-
-    const tagVersion = `v${version}`;
-
-    await git.add('./*');
-    console.log('Files staged.');
-
-    await git.commit(`Release ${tagVersion}`);
-    console.log('Files committed.');
-
+async function main() {
     try {
-        await git.addTag(tagVersion);
-        console.log('Tag version added.');
+        const currentVersion = await getCurrentVersion();
+        const suggestedVersion = calculateNextPatch(currentVersion);
+
+        const { version } = await inquirer.prompt([
+            {
+                name: 'version',
+                message: `Enter version to release (current: ${currentVersion})`,
+                default: suggestedVersion,
+                validate: input => semver.valid(input) ? true : 'Must be a valid semver (e.g., 1.0.0)',
+            },
+        ]);
+
+        console.log(`🚀 Releasing version ${version}`);
+
+        // Step 1: Update version
+        await updateVersionInComposer(version);
+
+        // Step 3: Git commit, tag, push
+        console.log('🔧 Staging files...');
+        await git.add('.');
+
+        console.log('✅ Committing release...');
+        await git.commit(`Release v${version}`);
+
+        console.log('🏷️ Tagging...');
+        await git.addTag(`v${version}`);
+
+        console.log('📤 Pushing...');
+        await git.push('origin', 'HEAD');
+        await git.pushTags();
+
+        console.log('🎉 Release complete!');
     } catch (err) {
-        console.log('No previous tags found. New tag created.');
+        console.error('❌ Release failed:', err.message);
+        process.exit(1);
     }
+}
 
-    await git.push('origin', 'HEAD'); // Pushes changes to the repository
-    console.log('Repository changes pushed.');
-
-    await git.push('origin', tagVersion); // Pushes the new tag
-    console.log('Tag version pushed.');
-
-    console.log('Push complete.');
-})();
+main();
