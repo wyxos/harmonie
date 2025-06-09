@@ -51,6 +51,10 @@ async function main() {
         console.log('✅ Committing release...');
         await git.commit(`Release v${version}`);
 
+        if (!version || !semver.valid(version)) {
+            throw new Error('Invalid version. Cannot create tag.');
+        }
+
         console.log('🏷️ Tagging...');
         await git.addTag(`v${version}`);
 
