@@ -29,5 +29,5 @@
     "laravel/scout": "^10.6",
     "phpoffice/phpspreadsheet": "^2.2"
   },
-  "version": "1.6.3"
+  "version": "1.6.4"
 }
