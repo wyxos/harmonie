@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Laravel\Scout\Builder as ScoutBuilder;
-use Wyxos\Harmonie\Resource\FormRequest;
+use Illuminate\Foundation\Http\FormRequest;
 
 abstract class ListingBase extends FormRequest
 {
