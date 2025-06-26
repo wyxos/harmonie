@@ -12,6 +12,7 @@ use Wyxos\Harmonie\Harmonie\Commands\InstallSparkpost;
 use Wyxos\Harmonie\Harmonie\Commands\ModelMakeCommand;
 use Wyxos\Harmonie\Harmonie\Commands\ScoutReset;
 use Wyxos\Harmonie\Harmonie\Commands\Setup;
+use Wyxos\Harmonie\Harmonie\Commands\Toggle;
 use Wyxos\Harmonie\Harmonie\Commands\SparkpostTest;
 use Wyxos\Harmonie\Harmonie\Commands\UninstallGitHook;
 
@@ -36,6 +37,7 @@ class HarmonieServiceProvider extends ServiceProvider
                 AppClear::class,
                 InstallSparkpost::class,
                 SparkpostTest::class,
+                Toggle::class,
             ]);
         }
     }
