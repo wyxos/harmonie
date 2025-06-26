@@ -8,7 +8,6 @@ import simpleGit from 'simple-git';
 
 const PACKAGE_DIR = path.resolve('.');
 const COMPOSER_PATH = path.join(PACKAGE_DIR, 'composer.json');
-const UI_PATH = path.join(PACKAGE_DIR, './ui');
 const git = simpleGit();
 
 async function getCurrentVersion() {
@@ -36,8 +35,8 @@ async function main() {
                 name: 'version',
                 message: `Enter version to release (current: ${currentVersion})`,
                 default: suggestedVersion,
-                validate: input => semver.valid(input) ? true : 'Must be a valid semver (e.g., 1.0.0)',
-            },
+                validate: input => semver.valid(input) ? true : 'Must be a valid semver (e.g., 1.0.0)'
+            }
         ]);
 
         console.log(`🚀 Releasing version ${version}`);
@@ -51,6 +50,10 @@ async function main() {
 
         console.log('✅ Committing release...');
         await git.commit(`Release v${version}`);
+
+        if (!version || !semver.valid(version)) {
+            throw new Error('Invalid version. Cannot create tag.');
+        }
 
         console.log('🏷️ Tagging...');
         await git.addTag(`v${version}`);
