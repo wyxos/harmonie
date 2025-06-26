@@ -8,9 +8,11 @@ use Wyxos\Harmonie\Harmonie\Commands\ClearAllCache;
 use Wyxos\Harmonie\Harmonie\Commands\FlushRedis;
 use Wyxos\Harmonie\Harmonie\Commands\GenerateAdministrator;
 use Wyxos\Harmonie\Harmonie\Commands\InstallGitHook;
+use Wyxos\Harmonie\Harmonie\Commands\InstallSparkpost;
 use Wyxos\Harmonie\Harmonie\Commands\ModelMakeCommand;
 use Wyxos\Harmonie\Harmonie\Commands\ScoutReset;
 use Wyxos\Harmonie\Harmonie\Commands\Setup;
+use Wyxos\Harmonie\Harmonie\Commands\SparkpostTest;
 use Wyxos\Harmonie\Harmonie\Commands\UninstallGitHook;
 
 class HarmonieServiceProvider extends ServiceProvider
@@ -32,6 +34,8 @@ class HarmonieServiceProvider extends ServiceProvider
                 UninstallGitHook::class,
                 Setup::class,
                 AppClear::class,
+                InstallSparkpost::class,
+                SparkpostTest::class,
             ]);
         }
     }
