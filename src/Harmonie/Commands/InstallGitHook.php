@@ -29,8 +29,8 @@ class InstallGitHook extends Command
     public function handle()
     {
         $gitDir = base_path('.git');
-        $hooksDir = $gitDir . '\hooks';
-        $prePushPath = $hooksDir . '\pre-push';
+        $hooksDir = $gitDir . DIRECTORY_SEPARATOR . 'hooks';
+        $prePushPath = $hooksDir . DIRECTORY_SEPARATOR . 'pre-push';
 
         // Check if .git directory exists
         if (!File::exists($gitDir)) {
@@ -43,7 +43,56 @@ class InstallGitHook extends Command
             File::makeDirectory($hooksDir, 0755, true);
         }
 
-        // Create pre-push hook content
+        // Detect operating system and create appropriate hook content
+        $isWindows = $this->isWindows();
+        $hookContent = $this->getHookContent($isWindows);
+
+        // Write the hook file
+        File::put($prePushPath, $hookContent);
+
+        // Make the hook executable (Unix/Linux/macOS only)
+        if (!$isWindows) {
+            chmod($prePushPath, 0755);
+        }
+
+        $this->info('Git pre-push hook installed successfully!');
+        $this->info('Tests will now run automatically before each push.');
+
+        return Command::SUCCESS;
+    }
+
+    /**
+     * Check if the current operating system is Windows.
+     *
+     * @return bool
+     */
+    private function isWindows(): bool
+    {
+        return strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+    }
+
+    /**
+     * Get the appropriate hook content based on the operating system.
+     *
+     * @param bool $isWindows
+     * @return string
+     */
+    private function getHookContent(bool $isWindows): string
+    {
+        if ($isWindows) {
+            return $this->getWindowsHookContent();
+        }
+
+        return $this->getUnixHookContent();
+    }
+
+    /**
+     * Get Unix/Linux/macOS hook content.
+     *
+     * @return string
+     */
+    private function getUnixHookContent(): string
+    {
         $hookContent = "#!/bin/sh\n\n";
         $hookContent .= "# Git hook installed by Harmonie package\n";
         $hookContent .= "echo \"Running tests before pushing...\"\n";
@@ -59,15 +108,29 @@ class InstallGitHook extends Command
         $hookContent .= "echo \"Tests passed. Proceeding with push.\"\n";
         $hookContent .= "exit 0\n";
 
-        // Write the hook file
-        File::put($prePushPath, $hookContent);
+        return $hookContent;
+    }
 
-        // Make the hook executable
-        chmod($prePushPath, 0755);
+    /**
+     * Get Windows hook content.
+     *
+     * @return string
+     */
+    private function getWindowsHookContent(): string
+    {
+        $hookContent = "@echo off\n";
+        $hookContent .= "REM Git hook installed by Harmonie package\n";
+        $hookContent .= "echo Running tests before pushing...\n";
+        $hookContent .= "php artisan test --parallel --compact\n\n";
+        $hookContent .= "REM Check the exit code of the tests\n";
+        $hookContent .= "if %ERRORLEVEL% neq 0 (\n";
+        $hookContent .= "  echo Tests failed. Push aborted.\n";
+        $hookContent .= "  exit /b 1\n";
+        $hookContent .= ")\n\n";
+        $hookContent .= "REM If tests passed, allow the push\n";
+        $hookContent .= "echo Tests passed. Proceeding with push.\n";
+        $hookContent .= "exit /b 0\n";
 
-        $this->info('Git pre-push hook installed successfully!');
-        $this->info('Tests will now run automatically before each push.');
-
-        return Command::SUCCESS;
+        return $hookContent;
     }
 }
