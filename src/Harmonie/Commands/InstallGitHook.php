@@ -47,7 +47,7 @@ class InstallGitHook extends Command
         $hookContent = "#!/bin/sh\n\n";
         $hookContent .= "# Git hook installed by Harmonie package\n";
         $hookContent .= "echo \"Running tests before pushing...\"\n";
-        $hookContent .= "php artisan test\n\n";
+        $hookContent .= "php artisan test --parallel --compact\n\n";
         $hookContent .= "# Get the exit code of the tests\n";
         $hookContent .= "EXIT_CODE=\$?\n\n";
         $hookContent .= "# If tests failed, prevent the push\n";
