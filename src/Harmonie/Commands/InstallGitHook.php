@@ -118,31 +118,18 @@ class InstallGitHook extends Command
      */
     private function getWindowsHookContent(): string
     {
-        $hookContent = "#!/bin/sh\n\n";
-        $hookContent .= "# Git hook installed by Harmonie package\n";
-        $hookContent .= "echo \"Running tests before pushing...\"\n\n";
-        $hookContent .= "# Try to find PHP executable\n";
-        $hookContent .= "if command -v php >/dev/null 2>&1; then\n";
-        $hookContent .= "    PHP_CMD=\"php\"\n";
-        $hookContent .= "elif command -v php.exe >/dev/null 2>&1; then\n";
-        $hookContent .= "    PHP_CMD=\"php.exe\"\n";
-        $hookContent .= "else\n";
-        $hookContent .= "    echo \"Error: PHP executable not found in PATH\"\n";
-        $hookContent .= "    echo \"Please ensure PHP is installed and added to your PATH\"\n";
-        $hookContent .= "    exit 1\n";
-        $hookContent .= "fi\n\n";
-        $hookContent .= "# Run the tests\n";
-        $hookContent .= "\$PHP_CMD artisan test --parallel --compact\n\n";
-        $hookContent .= "# Get the exit code of the tests\n";
-        $hookContent .= "EXIT_CODE=\$?\n\n";
-        $hookContent .= "# If tests failed, prevent the push\n";
-        $hookContent .= "if [ \$EXIT_CODE -ne 0 ]; then\n";
-        $hookContent .= "  echo \"Tests failed. Push aborted.\"\n";
-        $hookContent .= "  exit 1\n";
-        $hookContent .= "fi\n\n";
-        $hookContent .= "# If tests passed, allow the push\n";
-        $hookContent .= "echo \"Tests passed. Proceeding with push.\"\n";
-        $hookContent .= "exit 0\n";
+        $hookContent = "@echo off\n";
+        $hookContent .= "REM Git hook installed by Harmonie package\n";
+        $hookContent .= "echo Running tests before pushing...\n";
+        $hookContent .= "php artisan test --parallel --compact\n\n";
+        $hookContent .= "REM Check the exit code of the tests\n";
+        $hookContent .= "if %ERRORLEVEL% neq 0 (\n";
+        $hookContent .= "  echo Tests failed. Push aborted.\n";
+        $hookContent .= "  exit /b 1\n";
+        $hookContent .= ")\n\n";
+        $hookContent .= "REM If tests passed, allow the push\n";
+        $hookContent .= "echo Tests passed. Proceeding with push.\n";
+        $hookContent .= "exit /b 0\n";
 
         return $hookContent;
     }
