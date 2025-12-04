@@ -156,7 +156,12 @@ class Toggle extends Command
         $this->info('Running composer update wyxos/harmonie...');
         $process = Process::fromShellCommandline('composer update wyxos/harmonie');
         $process->setTimeout(null);
-        $process->setTty(true);
+        
+        // TTY mode is not supported on Windows
+        if (DIRECTORY_SEPARATOR !== '\\') {
+            $process->setTty(true);
+        }
+        
         $process->run(function ($type, $buffer) {
             $this->output->write($buffer);
         });
