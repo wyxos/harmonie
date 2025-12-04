@@ -84,8 +84,9 @@ class Toggle extends Command
             }
             
             // Get the latest version from packagist
+            // Use --available to get versions from Packagist (not local path repo)
             $this->info('Fetching latest version from packagist...');
-            $process = Process::fromShellCommandline('composer show wyxos/harmonie --latest --format=json');
+            $process = Process::fromShellCommandline('composer show wyxos/harmonie --available --format=json');
             $process->run();
             
             if (!$process->isSuccessful()) {
@@ -94,7 +95,26 @@ class Toggle extends Command
             }
             
             $packageInfo = json_decode($process->getOutput(), true);
-            $latestVersion = $packageInfo['latest'] ?? '*';
+            $latestVersion = '*';
+            
+            // Get the highest stable version from Packagist
+            if (isset($packageInfo['versions']) && is_array($packageInfo['versions'])) {
+                // Filter for stable versions (x.y.z format, not dev-*)
+                $stableVersions = array_filter($packageInfo['versions'], function($version) {
+                    return preg_match('/^\d+\.\d+\.\d+$/', $version);
+                });
+                
+                if (!empty($stableVersions)) {
+                    $stableVersions = array_values($stableVersions);
+                    usort($stableVersions, 'version_compare');
+                    $latestVersion = end($stableVersions);
+                } elseif (isset($packageInfo['latest']) && preg_match('/^\d+\.\d+\.\d+$/', $packageInfo['latest'])) {
+                    // Fallback to 'latest' if it's a stable version
+                    $latestVersion = $packageInfo['latest'];
+                }
+            } elseif (isset($packageInfo['latest']) && preg_match('/^\d+\.\d+\.\d+$/', $packageInfo['latest'])) {
+                $latestVersion = $packageInfo['latest'];
+            }
             
             // Update the require section
             $composerJson['require']['wyxos/harmonie'] = $latestVersion;
