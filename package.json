@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "release": "npx @wyxos/zephyr --type=packagist"
+    "release": "npx @wyxos/zephyr@latest --type=packagist"
   },
   "dependencies": {
     "execa": "^9.5.3",
