@@ -45,13 +45,21 @@ class Toggle extends Command
         
         // Check if using local version
         $usingLocalVersion = false;
+        $localRepositoryPath = null;
         
         if (isset($composerJson['repositories'])) {
             foreach ($composerJson['repositories'] as $repository) {
-                if (isset($repository['type']) && $repository['type'] === 'path' && 
-                    isset($repository['url']) && strpos($repository['url'], '../../composer/harmonie') !== false) {
-                    $usingLocalVersion = true;
-                    break;
+                if (isset($repository['type']) && $repository['type'] === 'path' && isset($repository['url'])) {
+                    $url = $repository['url'];
+                    // Check for both relative and absolute paths to harmonie
+                    if (strpos($url, 'harmonie') !== false && 
+                        (strpos($url, '../../composer/harmonie') !== false || 
+                         strpos($url, '/composer/harmonie') !== false ||
+                         strpos($url, '\\composer\\harmonie') !== false)) {
+                        $usingLocalVersion = true;
+                        $localRepositoryPath = $url;
+                        break;
+                    }
                 }
             }
         }
@@ -64,7 +72,7 @@ class Toggle extends Command
             $repositories = [];
             foreach ($composerJson['repositories'] as $repository) {
                 if (!(isset($repository['type']) && $repository['type'] === 'path' && 
-                    isset($repository['url']) && strpos($repository['url'], '../../composer/harmonie') !== false)) {
+                    isset($repository['url']) && $repository['url'] === $localRepositoryPath)) {
                     $repositories[] = $repository;
                 }
             }
@@ -96,6 +104,35 @@ class Toggle extends Command
             // Switch to local version
             $this->info('Currently using live version. Switching to local version...');
             
+            // Determine the path to use - try to detect from project structure
+            $projectPath = base_path();
+            $harmoniePath = null;
+            
+            // Try relative path first (../../composer/harmonie from project root)
+            $relativePath = '../../composer/harmonie';
+            $relativeFullPath = realpath(base_path($relativePath));
+            
+            // Try absolute path based on project location
+            // Extract the base path (e.g., D:/code/wyxos)
+            $pathParts = explode(DIRECTORY_SEPARATOR, str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $projectPath));
+            $wyxosIndex = array_search('wyxos', $pathParts);
+            if ($wyxosIndex !== false) {
+                $basePath = implode(DIRECTORY_SEPARATOR, array_slice($pathParts, 0, $wyxosIndex + 1));
+                $harmoniePath = $basePath . DIRECTORY_SEPARATOR . 'composer' . DIRECTORY_SEPARATOR . 'harmonie';
+                // Normalize to forward slashes for composer (Windows compatibility)
+                $harmoniePath = str_replace('\\', '/', $harmoniePath);
+                
+                // Verify the path exists
+                if (!is_dir($harmoniePath)) {
+                    $harmoniePath = null;
+                }
+            }
+            
+            // Use relative path if it exists, otherwise use absolute, fallback to relative
+            $pathToUse = ($relativeFullPath && is_dir($relativeFullPath)) 
+                ? $relativePath 
+                : ($harmoniePath ?? $relativePath);
+            
             // Add the path repository
             if (!isset($composerJson['repositories'])) {
                 $composerJson['repositories'] = [];
@@ -103,13 +140,13 @@ class Toggle extends Command
             
             $composerJson['repositories'][] = [
                 'type' => 'path',
-                'url' => '../../composer/harmonie'
+                'url' => $pathToUse
             ];
             
-            // Update the require section to use any version
-            $composerJson['require']['wyxos/harmonie'] = '*';
+            // Update the require section to use @dev for path repositories
+            $composerJson['require']['wyxos/harmonie'] = '@dev';
             
-            $this->info('Setting wyxos/harmonie to use local path repository');
+            $this->info("Setting wyxos/harmonie to use local path repository: {$pathToUse}");
         }
         
         // Save the updated composer.json
