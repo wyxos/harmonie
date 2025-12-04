@@ -49,7 +49,7 @@ class Toggle extends Command
         if (isset($composerJson['repositories'])) {
             foreach ($composerJson['repositories'] as $repository) {
                 if (isset($repository['type']) && $repository['type'] === 'path' && 
-                    isset($repository['url']) && strpos($repository['url'], 'wyxos/php/harmonie') !== false) {
+                    isset($repository['url']) && strpos($repository['url'], '../../composer/harmonie') !== false) {
                     $usingLocalVersion = true;
                     break;
                 }
@@ -64,7 +64,7 @@ class Toggle extends Command
             $repositories = [];
             foreach ($composerJson['repositories'] as $repository) {
                 if (!(isset($repository['type']) && $repository['type'] === 'path' && 
-                    isset($repository['url']) && strpos($repository['url'], 'wyxos/php/harmonie') !== false)) {
+                    isset($repository['url']) && strpos($repository['url'], '../../composer/harmonie') !== false)) {
                     $repositories[] = $repository;
                 }
             }
