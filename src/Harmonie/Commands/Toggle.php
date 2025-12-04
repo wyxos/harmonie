@@ -103,7 +103,7 @@ class Toggle extends Command
             
             $composerJson['repositories'][] = [
                 'type' => 'path',
-                'url' => '../../../wyxos/php/harmonie'
+                'url' => '../../composer/harmonie'
             ];
             
             // Update the require section to use any version
